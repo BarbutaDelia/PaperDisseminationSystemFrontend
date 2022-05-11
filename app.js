@@ -1,6 +1,7 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser')
+const cookieParser=require('cookie-parser');
 
 const app = express();
 
@@ -16,11 +17,12 @@ app.use(express.static('public'))
 app.use(bodyParser.json());
 // utilizarea unui algoritm de deep parsing care suportă obiecte în obiecte
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 // la accesarea din browser adresei http://localhost:6789/ se va returna textul 'Hello World'
 // proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
-app.get('/', (req, res) => res.send('Hello World'));
+app.get('/', (req, res) => res.render('index', {u: req.cookies.utilizator}));
 const fs = require('fs');
 // let rawdata = fs.readFileSync('intrebari.json');
 // let intrebari = JSON.parse(rawdata);
@@ -31,6 +33,7 @@ fs.readFile('intrebari.json', (err, data) => {
         // în fișierul views/chestionar.ejs este accesibilă variabila 'intrebari' care conține vectorul de întrebări
         res.render('chestionar', {intrebari: intrebari});
     });
+    
     app.post('/rezultat-chestionar', (req, res) => {
         console.log(req.body);
         //res.send("formular: " + JSON.stringify(req.body)
@@ -41,7 +44,26 @@ fs.readFile('intrebari.json', (err, data) => {
         }
         res.render('rezultat-chestionar', {punctaj: punctaj});
         console.log(punctaj)
-    });
+    }); 
+});
+app.get('/autentificare', (req, res) => {
+    res.clearCookie("mesajEroare")
+    if(req.cookies.utilizator == null)
+        res.render('autentificare', {m: req.cookies.mesajEroare})
+    res.redirect('/')
+})
+app.post('/verificare-autentificare', (request, response) => {
+    let username = request.body.username;
+	let password = request.body.password;
+    if(username == "delia" && password == "delia"){
+        response.cookie('utilizator', 'delia')
+        response.redirect('/')
+    }
+    else{
+        response.cookie('mesajEroare', 'Utilizator sau parola gresite!')
+        response.redirect('/autentificare')
+    }
+
 });
 
 // const listaIntrebari = [
@@ -62,12 +84,5 @@ fs.readFile('intrebari.json', (err, data) => {
 //     }
 
 // ];
-
-
-// la accesarea din browser adresei http://localhost:6789/chestionar se va apela funcția specificată
-// app.get('/chestionar', (req, res) => {
-// 	// în fișierul views/chestionar.ejs este accesibilă variabila 'intrebari' care conține vectorul de întrebări
-// 	res.render('chestionar', {intrebari: intrebari});
-// });
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:`));

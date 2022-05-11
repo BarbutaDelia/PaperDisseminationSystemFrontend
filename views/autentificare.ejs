@@ -1,0 +1,15 @@
+<div>
+    <h1>Login</h1>
+    <form action="/verificare-autentificare" method="post">
+        <label for="username"><b>Username</b></label><br>
+        <input type="text" placeholder="Enter Username" name="username" required><br>
+    
+        <label for="password"><b>Password</b></label><br>
+        <input type="password" placeholder="Enter Password" name="password" required><br>
+        <input type="submit" value="Login">
+    </form>
+    <p>
+        <%if(m!= null) %>
+        <%=m %>
+    </p>
+</div>
