@@ -3,6 +3,8 @@ const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser')
 const cookieParser=require('cookie-parser');
 const session = require('express-session');
+const sqlite3 = require('sqlite3');
+
 // app.use(session({secret: 'ssshhhhh'}));
 var sess;
 
@@ -26,8 +28,25 @@ app.use(session({secret: 'ssshhhhh'}))
 // la accesarea din browser adresei http://localhost:6789/ se va returna textul 'Hello World'
 // proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
-app.get('/', (req, res) => res.render('index', {u: req.session.username}));
+
+app.get('/', (req, res) => {
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if(err) {
+            return console.log(err.message);
+        }
+        console.log("Conectare reusita!")
+    });
+    db.all(`SELECT * FROM produse`, (err, data) => {
+        if(err) {
+            return console.log(err.message); 
+        }
+        console.log(data);
+        res.render('index', {u: req.session.username, data: data})
+    })
+})
+    
 const fs = require('fs');   
+const { redirect } = require('express/lib/response');
 // let rawdata = fs.readFileSync('intrebari.json');
 // let intrebari = JSON.parse(rawdata);
 fs.readFile('intrebari.json', (err, data) => {
@@ -78,25 +97,14 @@ app.post('/verificare-autentificare', (request, response) => {
             sess.firstName = utilizatori[i].prenume;
             // response.cookie('utilizator', 'delia')
             response.redirect('/')
-            return
+            return //de ce fara asta imi executa codul de dupa redirect??
         }
     }
     sess = request.session
     sess.errorMsg = "Utilizator sau parola gresite!"
     // response.cookie('mesajEroare', 'Utilizator sau parola gresite!')
     response.redirect('/autentificare')
-    // if(username == "delia" && password == "delia"){
-    //     sess=request.session;
-    //     sess.username = username;
-    //     // response.cookie('utilizator', 'delia')
-    //     response.redirect('/')
-    // // }
-    // else{
-    //     sess = request.session
-    //     sess.errorMsg = "Utilizator sau parola gresite!"
-    //     // response.cookie('mesajEroare', 'Utilizator sau parola gresite!')
-    //     response.redirect('/autentificare')
-    // }
+    
 
 });
 app.get('/logout', (req, res) => {
@@ -107,7 +115,51 @@ app.get('/logout', (req, res) => {
         res.redirect('/');
     });
 })
-
+app.get('/creare-bd', (req, res) => {
+    new sqlite3.Database('./cumparaturi.db', sqlite3.OPEN_READWRITE, (err) => {
+        if (err && err.code == "SQLITE_CANTOPEN") {
+            createDatabase();
+        } 
+        else if (err) {
+            console.log(err);
+            exit(1);
+        }
+        res.redirect('/');
+    });
+})
+function createDatabase() {
+    var newdb = new sqlite3.Database('cumparaturi.db', (err) => {
+        if (err) {
+            console.log(err);
+            exit(1);
+        }
+        console.log("Baza de date creata!")
+        createTables(newdb);
+    });
+}
+function createTables(newdb) {
+    newdb.run("CREATE TABLE produse (id_produs PRIMARY KEY NOT NULL, nume_produs TEXT NOT NULL UNIQUE, pret REAL NOT NULL)", function(createResult){
+        if(createResult) 
+            throw createResult;
+    });
+    console.log("Tabela creata!")
+}
+app.get('/inserare-bd', (req, res) => {
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if(err) {
+            return console.log(err.message);
+        }
+        console.log("Conectare reusita!")
+    });
+    db.run(`INSERT INTO produse(id_produs, nume_produs, pret) VALUES (1, 'Seminte de dovleac', 20.5), (2, 'Unt de arahide', 21.5), 
+    (3, 'Lapte de cocos', 49.63), (4, 'Fulgi de ovaz', 15), (5, 'Baton cu nuca', 9.7)`, (err) => {
+        if(err) {
+            return console.log(err.message); 
+        }
+        console.log('Adaugarea s-a realizat cu succes!');
+    })
+    res.redirect('/');
+})
 // const listaIntrebari = [
 //     {
 //         intrebare: 'Când au devenit alimentele bio cunoscute?', 

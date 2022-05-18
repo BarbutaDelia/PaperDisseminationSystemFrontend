@@ -3,5 +3,20 @@
 <%} else { %>
     Bine ai venit, <%=u%>! <br>
     <a href="logout">Delogare</a>
-<% } %>    
+<% } %>
+<br>    
+<form action="/creare-bd" method="get">
+    <input type="submit" value="Creare BD">
+</form>
+<form action="/inserare-bd" method="get">
+    <input type="submit" value="Încarcare BD">
+</form>
+<p>
+    Lista produse:
+</p> 
+<% for (let i in data) { %>
+    <p><%= data[i].id_produs %>. <%= data[i].nume_produs %>, <%= data[i].pret %> </p>
+    <% 
+    } 
+%>
 <!-- la logout fac clear(cookies)-->
