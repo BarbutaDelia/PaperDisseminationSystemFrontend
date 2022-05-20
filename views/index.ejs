@@ -16,7 +16,16 @@
 </p> 
 <% for (let i in data) { %>
     <p><%= data[i].id_produs %>. <%= data[i].nume_produs %>, <%= data[i].pret %> </p>
-    <% 
-    } 
+    <% if(u != null){ %>
+    <form action="/adaugare-cos" method="post">
+        <input type="hidden" name="id" value=<%= data[i].id_produs %>>
+        <input type="submit" value="Adauga">
+    </form>
+    <%  
+    }
+}
 %>
+<% if(u != null){ %>
+    <a href="vizualizare-cos">Vizualizare cos</a>
+    <% } %>
 <!-- la logout fac clear(cookies)-->

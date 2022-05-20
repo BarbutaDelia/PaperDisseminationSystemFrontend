@@ -7,7 +7,7 @@ const sqlite3 = require('sqlite3');
 
 // app.use(session({secret: 'ssshhhhh'}));
 var sess;
-
+var databaseNrEntries;
 const app = express();
 
 const port = 6789;
@@ -34,19 +34,22 @@ app.get('/', (req, res) => {
         if(err) {
             return console.log(err.message);
         }
-        console.log("Conectare reusita!")
+        // console.log("Conectare reusita!")
     });
     db.all(`SELECT * FROM produse`, (err, data) => {
         if(err) {
             return console.log(err.message); 
         }
-        console.log(data);
+        // console.log(data);
+        databaseNrEntries = data.length
+        // console.log(databaseNrEntries)
         res.render('index', {u: req.session.username, data: data})
     })
 })
     
 const fs = require('fs');   
 const { redirect } = require('express/lib/response');
+const { ClientRequest } = require('http');
 // let rawdata = fs.readFileSync('intrebari.json');
 // let intrebari = JSON.parse(rawdata);
 fs.readFile('intrebari.json', (err, data) => {
@@ -160,6 +163,50 @@ app.get('/inserare-bd', (req, res) => {
     })
     res.redirect('/');
 })
+app.post('/adaugare-cos', (request, response) => {
+    let id = request.body.id
+    sess = request.session
+    sess.productArray = sess.productArray || []; 
+    sess.productArray.push(id)
+    console.log(sess.productArray)
+    response.redirect('/')
+});
+app.get('/vizualizare-cos', (request, response) => {
+    console.log(databaseNrEntries)
+    var productsId
+    var numberOfProducts = []
+    for(let i = 0; i < databaseNrEntries; i++){
+        numberOfProducts[i] = 0
+    }
+    // console.log(numberOfProducts)
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if(err) {
+            return console.log(err.message);
+        }
+    });
+    for(i in request.session.productArray)
+    {
+        if(i == 0){
+            productsId = request.session.productArray[i]
+        }
+        if(i > 0 && i < request.session.productArray.length ){
+            productsId += " OR id_produs = " + request.session.productArray[i]
+        }
+        numberOfProducts[request.session.productArray[i] - 1] ++;
+    }
+    // console.log(productsId)
+    // console.log(numberOfProducts)
+    db.all(`SELECT * FROM produse WHERE id_produs = ` + productsId, (err, data) => {
+        if(err) {
+             return console.log(err.message); 
+        }
+        response.render('vizualizare-cos', {productArray: data, numberOfProducts: numberOfProducts})
+        // console.log(data)
+    })
+    // }
+    // response.render('vizualizare-cos', {productArray: productsId})
+});
+// con
 // const listaIntrebari = [
 //     {
 //         intrebare: 'Când au devenit alimentele bio cunoscute?', 
