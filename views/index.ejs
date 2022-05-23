@@ -26,6 +26,9 @@
 }
 %>
 <% if(u != null){ %>
-    <a href="vizualizare-cos">Vizualizare cos</a>
-    <% } %>
+    <a href="vizualizare-cos">Vizualizare cos</a><br>
+<% } %>
+<% if(type == "admin"){ %>
+    <a href="admin">Adauga un produs nou in baza de date</a>
+<% } %>
 <!-- la logout fac clear(cookies)-->

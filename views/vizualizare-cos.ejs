@@ -2,7 +2,7 @@
     <p>Nu ati adaugat nimic in cos!</p>
 <%} else { 
     for(let i in productArray) {%>
-        <p><%= productArray[i].id_produs %>. <%= productArray[i].nume_produs %>, <%= productArray[i].pret %>, cantitate:  <%= numberOfProducts[productArray[i].id_produs - 1]%></p>
+        <p><%= productArray[i].nume_produs %>, <%= productArray[i].pret %>, cantitate:  <%= numberOfProducts[productArray[i].id_produs - 1]%></p>
 <% } 
     }%>
 

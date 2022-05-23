@@ -4,6 +4,8 @@ const bodyParser = require('body-parser')
 const cookieParser=require('cookie-parser');
 const session = require('express-session');
 const sqlite3 = require('sqlite3');
+const requestIp = require('request-ip');
+const ipfilter = require('express-ipfilter').IpFilter
 
 // app.use(session({secret: 'ssshhhhh'}));
 var sess;
@@ -24,11 +26,29 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser())
 app.use(session({secret: 'ssshhhhh'}))
-
+// app.use(function(req, res){
+//     if(req.session.blockedIp != null)
+//         ipfilter(req.session.blockedIp, { mode: 'deny' })
+// })
 // la accesarea din browser adresei http://localhost:6789/ se va returna textul 'Hello World'
 // proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
-
+//am nevoie de type in json care poate fi user sau admin
+//de fiecare data cand un utilizator face un request pentru o resursa, iar response-ul e 404 (resursa inexistenta)
+//incrementez counter-ul din sesiune. Cand trece de o anumita valoare, adaug in cookie la blockedIp, ip-ul user-ului
+//si setez durata de viata a cookie-ului cateva minute
+//counter pt incercari nereusite in sesiune. cookie pt blockedLogin
+//injection???
+app.use(function(req, res) {
+    let clientIp = requestIp.getClientIp(req);
+    console.log(clientIp)
+    if(req.session.blockedIp != null){
+        if(req.session.blockedIp.includes(clientIp)){
+            res.send('Prea multe incercari de accesare a resurselor inexistente! IP blocat temporar!')
+        }
+    }
+    return
+});
 app.get('/', (req, res) => {
     let db = new sqlite3.Database('./cumparaturi.db', (err) => {
         if(err) {
@@ -43,13 +63,16 @@ app.get('/', (req, res) => {
         // console.log(data);
         databaseNrEntries = data.length
         // console.log(databaseNrEntries)
-        res.render('index', {u: req.session.username, data: data})
+        res.render('index', {u: req.session.username, data: data, type: req.session.type})
     })
 })
     
 const fs = require('fs');   
 const { redirect } = require('express/lib/response');
 const { ClientRequest } = require('http');
+const { response } = require('express');
+const e = require('express');
+const { exit } = require('process');
 // let rawdata = fs.readFileSync('intrebari.json');
 // let intrebari = JSON.parse(rawdata);
 fs.readFile('intrebari.json', (err, data) => {
@@ -98,6 +121,7 @@ app.post('/verificare-autentificare', (request, response) => {
             sess.username = username;
             sess.lastName = utilizatori[i].nume;
             sess.firstName = utilizatori[i].prenume;
+            sess.type = utilizatori[i].tip;
             // response.cookie('utilizator', 'delia')
             response.redirect('/')
             return //de ce fara asta imi executa codul de dupa redirect??
@@ -152,7 +176,7 @@ app.get('/inserare-bd', (req, res) => {
         if(err) {
             return console.log(err.message);
         }
-        console.log("Conectare reusita!")
+        //console.log("Conectare reusita!")
     });
     db.run(`INSERT INTO produse(id_produs, nume_produs, pret) VALUES (1, 'Seminte de dovleac', 20.5), (2, 'Unt de arahide', 21.5), 
     (3, 'Lapte de cocos', 49.63), (4, 'Fulgi de ovaz', 15), (5, 'Baton cu nuca', 9.7)`, (err) => {
@@ -206,24 +230,49 @@ app.get('/vizualizare-cos', (request, response) => {
     // }
     // response.render('vizualizare-cos', {productArray: productsId})
 });
-// con
-// const listaIntrebari = [
-//     {
-//         intrebare: 'Când au devenit alimentele bio cunoscute?', 
-//         variante: ['1900', '1940', '1960', '1970'],
-//         corect: 1
-//     },
-//     {
-//         intrebare: 'Se pot utiliza pesticide în producția alimentelor bio?',
-//         variante: ['Nu', 'Da, dacă acestea nu sunt sintetice', 'Da'],
-//         corect: 1
-//     },
-//     {
-//         intrebare: 'Ce reprezintă efectul Halo?',
-//         variante: ['Efectul de luminare a unei suprafețe', 'Tendința unei persoane de a consumă alimente pe care le-a cunoaște dintr-un context anterior', 'Efectul prin care percepția unei persoane este afectată de credințele sale'],
-//         corect: 2
-//     }
-
-// ];
+app.get('/admin', (request, response) => {
+    response.render('admin')
+});
+app.post('/inserare-produs', (req, res) => {
+    let productName = req.body.name
+    let productPrice = req.body.price
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if(err) {
+            return console.log(err.message);
+        }
+        //console.log("Conectare reusita!")
+    });
+    db.all(`SELECT MAX(id_produs) AS maxID FROM produse`, (err, data) => {
+        if(err) {
+            return console.log(err.message); 
+        }
+        let maxId = data[0].maxID
+        db.run(`INSERT INTO produse(id_produs, nume_produs, pret) VALUES (?, ?, ?)`, [maxId + 1, productName, productPrice], (err) => {
+            if(err) {
+                return console.log(err.message); 
+            }
+            console.log('Adaugarea s-a realizat cu succes!');
+        })
+    })
+    res.redirect('/')
+});
+app.use(function(req, res) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    if(req.session.accessCounter == null){
+        req.session.accessCounter = 1
+    }
+    else{
+        req.session.accessCounter ++
+    }
+    console.log(req.session.accessCounter)
+    if(req.session.accessCounter > 5){
+        req.session.blockedIp = req.session.blockedIp || []; 
+        let clientIp = requestIp.getClientIp(req);
+        console.log(clientIp);
+        req.session.blockedIp.push(clientIp)
+    }
+    res.send('Error 404! Page not found!')
+});
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:`));
