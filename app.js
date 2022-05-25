@@ -39,22 +39,25 @@ app.use(session({secret: 'ssshhhhh'}))
 //si setez durata de viata a cookie-ului cateva minute
 //counter pt incercari nereusite in sesiune. cookie pt blockedLogin
 //injection???
-app.use(function(req, res) {
+
+function checkBlacklist(req, res) {
     let clientIp = requestIp.getClientIp(req);
-    console.log(clientIp)
+    //console.log(clientIp)
     if(req.session.blockedIp != null){
         if(req.session.blockedIp.includes(clientIp)){
             res.send('Prea multe incercari de accesare a resurselor inexistente! IP blocat temporar!')
+            return true
         }
     }
-    return
-});
+    return false
+}
 app.get('/', (req, res) => {
+    checkBlacklist(req, res)
     let db = new sqlite3.Database('./cumparaturi.db', (err) => {
         if(err) {
             return console.log(err.message);
         }
-        // console.log("Conectare reusita!")
+        //  console.log("Conectare reusita!")
     });
     db.all(`SELECT * FROM produse`, (err, data) => {
         if(err) {
@@ -64,6 +67,7 @@ app.get('/', (req, res) => {
         databaseNrEntries = data.length
         // console.log(databaseNrEntries)
         res.render('index', {u: req.session.username, data: data, type: req.session.type})
+        
     })
 })
     
@@ -73,51 +77,66 @@ const { ClientRequest } = require('http');
 const { response } = require('express');
 const e = require('express');
 const { exit } = require('process');
-// let rawdata = fs.readFileSync('intrebari.json');
-// let intrebari = JSON.parse(rawdata);
-fs.readFile('intrebari.json', (err, data) => {
-    if (err) throw err;
-    let intrebari = JSON.parse(data);
-    app.get('/chestionar', (req, res) => {
-        // în fișierul views/chestionar.ejs este accesibilă variabila 'intrebari' care conține vectorul de întrebări
-        res.render('chestionar', {intrebari: intrebari});
-    });
-    
-    app.post('/rezultat-chestionar', (req, res) => {
-        console.log(req.body);
-        //res.send("formular: " + JSON.stringify(req.body)
-        var punctaj = 0
-        for(let i in intrebari){
-            if(req.body[`q${i}`] == intrebari[i].corect)
-                punctaj++;
-        }
-        res.render('rezultat-chestionar', {punctaj: punctaj});
-        console.log(punctaj)
-    }); 
+
+app.get('/chestionar', (req, res) => {
+    if(!checkBlacklist(req, res)){
+            fs.readFile('intrebari.json', (err, data) => {
+                if (err) throw err;
+                let intrebari = JSON.parse(data);
+            // în fișierul views/chestionar.ejs este accesibilă variabila 'intrebari' care conține vectorul de întrebări
+                res.render('chestionar', {intrebari: intrebari});
+            })
+    }
 });
+app.post('/rezultat-chestionar', (req, res) => {
+    if(!checkBlacklist(req, res)){
+        fs.readFile('intrebari.json', (err, data) => {
+            if (err) throw err;
+            let intrebari = JSON.parse(data);
+            var punctaj = 0
+            for(let i in intrebari){
+                if(req.body[`q${i}`] == intrebari[i].corect)
+                    punctaj++;
+            }
+            res.render('rezultat-chestionar', {punctaj: punctaj});
+            // console.log(punctaj)
+        })
+    }
+}); 
 app.get('/autentificare', (req, res) => {
     // res.clearCookie("mesajEroare")
     // if(req.cookies.utilizator == null)index
     //     res.render('autentificare', {m: req.cookies.mesajEroare})
     // res.redirect('/')
-    sess = req.session;
-    if(sess.username != null){
-        res.redirect('/')
-    }
-    else{
-        res.render('autentificare', {e: req.session.errorMsg})
+    if(!checkBlacklist(req, res)){
+        sess = req.session;
+        // console.log("timestamp " + sess.blockedTimestamp)
+        let currentDate = Date.now()
+        // console.log("current date " + currentDate)
+        if(sess.blockedTimestamp == null || sess.blockedTimestamp + 30000 < currentDate){
+            if(sess.username != null){
+                res.redirect('/')
+            }
+            else{
+                res.render('autentificare', {e: req.session.errorMsg})
+            }
+        }
+        else{
+            res.render('autentificare-esuata')
+        }
     }
 })
+
 let rawdata = fs.readFileSync('utilizatori.json');
 let utilizatori = JSON.parse(rawdata);
-
 app.post('/verificare-autentificare', (request, response) => {
-    console.log(utilizatori)
+    //console.log(utilizatori)
     let username = request.body.username;
 	let password = request.body.password;
     for(let i in utilizatori){
         if(username == utilizatori[i].utilizator && password == utilizatori[i].parola){
-            sess=request.session;
+            sess.loginErrorCnt = 0
+            sess = request.session;
             sess.username = username;
             sess.lastName = utilizatori[i].nume;
             sess.firstName = utilizatori[i].prenume;
@@ -129,18 +148,35 @@ app.post('/verificare-autentificare', (request, response) => {
     }
     sess = request.session
     sess.errorMsg = "Utilizator sau parola gresite!"
+    if(sess.loginErrorCnt == null){
+        sess.loginErrorCnt = 1
+    }
+    else{
+        sess.loginErrorCnt ++
+    }
+    if(sess.loginErrorCnt > 3){
+        if(sess.blockedTimestamp == null){  
+            sess.blockedTimestamp = Date.now()
+        }
+        else{
+            sess.blockedTimestamp += 30000
+        }
+    }
+    // console.log(sess.blockedTimestamp)
     // response.cookie('mesajEroare', 'Utilizator sau parola gresite!')
     response.redirect('/autentificare')
     
 
 });
 app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if(err) {
-            return console.log(err);
-        }
-        res.redirect('/');
-    });
+    if(!checkBlacklist(req, res)){
+        req.session.destroy((err) => {
+            if(err) {
+                return console.log(err);
+            }
+            res.redirect('/');
+        });
+    }
 })
 app.get('/creare-bd', (req, res) => {
     new sqlite3.Database('./cumparaturi.db', sqlite3.OPEN_READWRITE, (err) => {
@@ -188,52 +224,58 @@ app.get('/inserare-bd', (req, res) => {
     res.redirect('/');
 })
 app.post('/adaugare-cos', (request, response) => {
+    checkBlacklist(request, response)
     let id = request.body.id
     sess = request.session
     sess.productArray = sess.productArray || []; 
     sess.productArray.push(id)
-    console.log(sess.productArray)
+    // console.log(sess.productArray)
     response.redirect('/')
 });
 app.get('/vizualizare-cos', (request, response) => {
-    console.log(databaseNrEntries)
-    var productsId
-    var numberOfProducts = []
-    for(let i = 0; i < databaseNrEntries; i++){
-        numberOfProducts[i] = 0
-    }
-    // console.log(numberOfProducts)
-    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
-        if(err) {
-            return console.log(err.message);
+    if(!checkBlacklist(request, response)){
+        // console.log(databaseNrEntries)
+        var productsId
+        var numberOfProducts = []
+        for(let i = 0; i < databaseNrEntries; i++){
+            numberOfProducts[i] = 0
         }
-    });
-    for(i in request.session.productArray)
-    {
-        if(i == 0){
-            productsId = request.session.productArray[i]
+        // console.log(numberOfProducts)
+        let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+            if(err) {
+                return console.log(err.message);
+            }
+        });
+        for(i in request.session.productArray)
+        {
+            if(i == 0){
+                productsId = request.session.productArray[i]
+            }
+            if(i > 0 && i < request.session.productArray.length ){
+                productsId += " OR id_produs = " + request.session.productArray[i]
+            }
+            numberOfProducts[request.session.productArray[i] - 1] ++;
         }
-        if(i > 0 && i < request.session.productArray.length ){
-            productsId += " OR id_produs = " + request.session.productArray[i]
-        }
-        numberOfProducts[request.session.productArray[i] - 1] ++;
-    }
     // console.log(productsId)
     // console.log(numberOfProducts)
-    db.all(`SELECT * FROM produse WHERE id_produs = ` + productsId, (err, data) => {
-        if(err) {
-             return console.log(err.message); 
-        }
-        response.render('vizualizare-cos', {productArray: data, numberOfProducts: numberOfProducts})
-        // console.log(data)
-    })
+        db.all(`SELECT * FROM produse WHERE id_produs = ` + productsId, (err, data) => {
+            if(err) {
+                response.render('vizualizare-cos', {productArray: [], numberOfProducts: numberOfProducts})
+                return console.log(err.message); 
+            }
+            response.render('vizualizare-cos', {productArray: data, numberOfProducts: numberOfProducts})
+            // console.log(data)
+        })
+    }
     // }
     // response.render('vizualizare-cos', {productArray: productsId})
 });
 app.get('/admin', (request, response) => {
+    checkBlacklist(request, response)
     response.render('admin')
 });
 app.post('/inserare-produs', (req, res) => {
+    checkBlacklist(req, res)
     let productName = req.body.name
     let productPrice = req.body.price
     let db = new sqlite3.Database('./cumparaturi.db', (err) => {
@@ -251,28 +293,33 @@ app.post('/inserare-produs', (req, res) => {
             if(err) {
                 return console.log(err.message); 
             }
-            console.log('Adaugarea s-a realizat cu succes!');
+            // console.log('Adaugarea s-a realizat cu succes!');
         })
     })
     res.redirect('/')
 });
 app.use(function(req, res) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    if(req.session.accessCounter == null){
-        req.session.accessCounter = 1
+    res.status(404);
+    if(res.statusCode == 404){
+        if(req.session.accessCounter == null){
+            req.session.accessCounter = 1
+        }
+        else{
+            req.session.accessCounter ++
+        }
     }
-    else{
-        req.session.accessCounter ++
-    }
-    console.log(req.session.accessCounter)
+    // console.log(req.session.accessCounter)
     if(req.session.accessCounter > 5){
         req.session.blockedIp = req.session.blockedIp || []; 
         let clientIp = requestIp.getClientIp(req);
-        console.log(clientIp);
-        req.session.blockedIp.push(clientIp)
+        // console.log(clientIp);
+        if(!req.session.blockedIp.includes(clientIp)){
+            req.session.blockedIp.push(clientIp)
+            // console.log(req.session.blockedIp)
+        }
     }
     res.send('Error 404! Page not found!')
+    return
 });
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:`));

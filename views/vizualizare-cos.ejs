@@ -1,8 +1,24 @@
-<% if(productArray == null){ %>
+<% if(productArray.length == 0){ %>
     <p>Nu ati adaugat nimic in cos!</p>
-<%} else { 
-    for(let i in productArray) {%>
-        <p><%= productArray[i].nume_produs %>, <%= productArray[i].pret %>, cantitate:  <%= numberOfProducts[productArray[i].id_produs - 1]%></p>
-<% } 
-    }%>
+<% } else { %>
+    <h2>Produse in cos</h2>
+    <table>
+        <thead>
+            <tr>
+                <td>Denumire</td>
+                <td align="right">Cantitate</td>
+                <td align="right">Pret/buc</td>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let i in productArray) { %>
+            <tr>
+                <td><%= productArray[i].nume_produs %></td>
+                <td align="right"><%= productArray[i].pret %></td>
+                <td align="right"><%= numberOfProducts[productArray[i].id_produs - 1]%></td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+<% } %>
 

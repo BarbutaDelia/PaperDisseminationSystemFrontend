@@ -1,34 +1,38 @@
-<% if(u == null){ %>
-    <a href="autentificare"> Autentificare </a>
-<%} else { %>
-    Bine ai venit, <%=u%>! <br>
-    <a href="logout">Delogare</a>
-<% } %>
-<br>    
-<form action="/creare-bd" method="get">
-    <input type="submit" value="Creare BD">
-</form>
-<form action="/inserare-bd" method="get">
-    <input type="submit" value="Încarcare BD">
-</form>
-<p>
-    Lista produse:
-</p> 
-<% for (let i in data) { %>
-    <p><%= data[i].id_produs %>. <%= data[i].nume_produs %>, <%= data[i].pret %> </p>
-    <% if(u != null){ %>
-    <form action="/adaugare-cos" method="post">
-        <input type="hidden" name="id" value=<%= data[i].id_produs %>>
-        <input type="submit" value="Adauga">
+<div class="login-container"> 
+    <% if(u == null){ %>
+        <a href="autentificare"> <- Autentificare -></a>
+    <%} else { %>
+        Bine ai venit, <%=u%>! <a href="logout">Delogare</a>
+    <% } %>
+</div> 
+<div class="bd-container">
+    <form action="/creare-bd" method="get">
+        <input type="submit" value="Creare BD">
     </form>
-    <%  
-    }
-}
-%>
+    <form action="/inserare-bd" method="get">
+        <input type="submit" value="Încarcare BD">
+    </form>
+</div>
+<h2>Lista produse:</h2>
+<% for (let i in data) { %>
+    <div class="produs">
+        <div><%= data[i].id_produs %>. <%= data[i].nume_produs %>, <%= data[i].pret %></div>
+        <% if(u != null){ %>
+            <div>
+                <form action="/adaugare-cos" method="post">
+                    <input type="hidden" name="id" value=<%= data[i].id_produs %>>
+                    <input type="submit" value="Adauga">
+                </form>
+            </div>
+        <% } %>
+    </div>
+<% } %>
+<div class="bottom-buttons">
 <% if(u != null){ %>
-    <a href="vizualizare-cos">Vizualizare cos</a><br>
+    <a href="vizualizare-cos">Vizualizare cos</a>
 <% } %>
 <% if(type == "admin"){ %>
     <a href="admin">Adauga un produs nou in baza de date</a>
 <% } %>
+</div>
 <!-- la logout fac clear(cookies)-->
