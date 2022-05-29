@@ -118,9 +118,11 @@ app.get('/autentificare', (req, res) => {
         if(sess.dictTimestamp == null ){
             if(sess.username != null){
                 res.redirect('/')
+                return
             }
             else{
                 res.render('autentificare', {e: req.session.errorMsg})
+                return
             }
         }
         else{
@@ -161,8 +163,8 @@ app.post('/verificare-autentificare', (request, response) => {
             sess.lastName = utilizatori[i].nume;
             sess.firstName = utilizatori[i].prenume;
             sess.type = utilizatori[i].tip;
-            sess.dictCounter = []
-            sess.dictTimestamp = []
+            sess.dictCounter = null
+            sess.dictTimestamp = null
             // response.cookie('utilizator', 'delia')
             response.redirect('/')
             return //de ce fara asta imi executa codul de dupa redirect??
