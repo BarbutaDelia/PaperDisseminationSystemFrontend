@@ -13,7 +13,7 @@
         <input type="submit" value="Încarcare BD">
     </form>
 </div>
-<h2>Lista produse:</h2>
+<h2>Listă produse:</h2>
 <% for (let i in data) { %>
     <div class="produs">
         <div><%= data[i].id_produs %>. <%= data[i].nume_produs %>, <%= data[i].pret %></div>
@@ -21,7 +21,7 @@
             <div>
                 <form action="/adaugare-cos" method="post">
                     <input type="hidden" name="id" value=<%= data[i].id_produs %>>
-                    <input type="submit" value="Adauga">
+                    <input type="submit" value="Adaugă">
                 </form>
             </div>
         <% } %>
@@ -29,10 +29,10 @@
 <% } %>
 <div class="bottom-buttons">
 <% if(u != null){ %>
-    <a href="vizualizare-cos">Vizualizare cos</a>
+    <a href="vizualizare-cos">Vizualizare coș</a>
 <% } %>
 <% if(type == "admin"){ %>
-    <a href="admin">Adauga un produs nou in baza de date</a>
+    <a href="admin">Adaugă un produs nou în baza de date</a>
 <% } %>
 </div>
 <!-- la logout fac clear(cookies)-->

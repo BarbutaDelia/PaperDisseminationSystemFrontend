@@ -45,7 +45,7 @@ function checkBlacklist(req, res) {
     //console.log(clientIp)
     if(req.session.blockedIp != null){
         if(req.session.blockedIp.includes(clientIp)){
-            res.send('Prea multe incercari de accesare a resurselor inexistente! IP blocat temporar!')
+            res.render('eroare-resurse')
             return true
         }
     }
@@ -148,20 +148,30 @@ app.post('/verificare-autentificare', (request, response) => {
     }
     sess = request.session
     sess.errorMsg = "Utilizator sau parola gresite!"
-    if(sess.loginErrorCnt == null){
-        sess.loginErrorCnt = 1
+    let clientIp = requestIp.getClientIp(request)
+    if(sess.dictCounter == null){
+        sess.dictCounter = {}
+        sess.dictCounter.clientIp = 1
     }
     else{
-        sess.loginErrorCnt ++
+        sess.dictCounter[clientIp] ++
     }
-    if(sess.loginErrorCnt > 3){
-        if(sess.blockedTimestamp == null){  
-            sess.blockedTimestamp = Date.now()
-        }
-        else{
-            sess.blockedTimestamp += 30000
-        }
-    }
+    console.log(sess.dictCounter[clientIp])
+    // if(sess.loginErrorCnt == null){
+    //     sess.loginErrorCnt = 1
+    // }
+    // else{
+    //     sess.loginErrorCnt ++
+    // }
+    // if(sess.loginErrorCnt > 3){
+    //     if(sess.blockedTimestamp == null){  
+    //         sess.blockedTimestamp = Date.now()
+    //     }
+    //     else{
+    //         sess.blockedTimestamp += 30000
+    //     }
+    // }
+    // console.log(sess.loginErrorCnt)
     // console.log(sess.blockedTimestamp)
     // response.cookie('mesajEroare', 'Utilizator sau parola gresite!')
     response.redirect('/autentificare')
@@ -214,8 +224,8 @@ app.get('/inserare-bd', (req, res) => {
         }
         //console.log("Conectare reusita!")
     });
-    db.run(`INSERT INTO produse(id_produs, nume_produs, pret) VALUES (1, 'Seminte de dovleac', 20.5), (2, 'Unt de arahide', 21.5), 
-    (3, 'Lapte de cocos', 49.63), (4, 'Fulgi de ovaz', 15), (5, 'Baton cu nuca', 9.7)`, (err) => {
+    db.run(`INSERT INTO produse(id_produs, nume_produs, pret) VALUES (1, 'Semințe de dovleac', 20.5), (2, 'Unt de arahide', 21.5), 
+    (3, 'Lapte de cocos', 49.63), (4, 'Fulgi de ovăz', 15), (5, 'Baton cu nuca', 9.7)`, (err) => {
         if(err) {
             return console.log(err.message); 
         }
@@ -272,7 +282,12 @@ app.get('/vizualizare-cos', (request, response) => {
 });
 app.get('/admin', (request, response) => {
     checkBlacklist(request, response)
-    response.render('admin')
+    if(request.session.type == "admin"){
+        response.render('admin')
+    }
+    else{
+        response.redirect('/')
+    }
 });
 app.post('/inserare-produs', (req, res) => {
     checkBlacklist(req, res)
@@ -318,7 +333,7 @@ app.use(function(req, res) {
             // console.log(req.session.blockedIp)
         }
     }
-    res.send('Error 404! Page not found!')
+    res.render('eroare-404')
     return
 });
 
