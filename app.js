@@ -113,7 +113,9 @@ app.get('/autentificare', (req, res) => {
         // console.log("timestamp " + sess.blockedTimestamp)
         let currentDate = Date.now()
         // console.log("current date " + currentDate)
-        if(sess.blockedTimestamp == null || sess.blockedTimestamp + 30000 < currentDate){
+        //|| sess.blockedTimestamp + 30000 < currentDate
+        // console.log(sess.dictTimestamp)
+        if(sess.dictTimestamp == null ){
             if(sess.username != null){
                 res.redirect('/')
             }
@@ -122,8 +124,26 @@ app.get('/autentificare', (req, res) => {
             }
         }
         else{
+            // console.log('aici')
+            let clientIp = requestIp.getClientIp(req)
+            for(i in sess.dictTimestamp){
+                if(sess.dictTimestamp[i][0] == clientIp){
+                    var index = i
+                }
+            }
+            if(sess.dictTimestamp[index][1] + 30000 < currentDate){
+                if(sess.username != null){
+                    res.redirect('/')
+                    return
+                }
+                else{
+                    res.render('autentificare', {e: req.session.errorMsg})
+                    return
+                }
+            }
             res.render('autentificare-esuata')
         }
+        
     }
 })
 
@@ -141,6 +161,8 @@ app.post('/verificare-autentificare', (request, response) => {
             sess.lastName = utilizatori[i].nume;
             sess.firstName = utilizatori[i].prenume;
             sess.type = utilizatori[i].tip;
+            sess.dictCounter = []
+            sess.dictTimestamp = []
             // response.cookie('utilizator', 'delia')
             response.redirect('/')
             return //de ce fara asta imi executa codul de dupa redirect??
@@ -149,31 +171,53 @@ app.post('/verificare-autentificare', (request, response) => {
     sess = request.session
     sess.errorMsg = "Utilizator sau parola gresite!"
     let clientIp = requestIp.getClientIp(request)
-    if(sess.dictCounter == null){
-        sess.dictCounter = {}
-        sess.dictCounter.clientIp = 1
+    if(sess.dictCounter == null){ // caz in care nu am nimic in dictionatul de ip - counter
+        sess.dictCounter = []
+        var pair = [clientIp, 1]
+        sess.dictCounter.push(pair)
     }
     else{
-        sess.dictCounter[clientIp] ++
+        // console.log("asa")
+        for(let i in sess.dictCounter){
+            console.log(sess.dictCounter[i][0])
+            if(sess.dictCounter[i][0] == clientIp){
+                var myIndex = i
+                // console.log("aici")
+            }
+        }
+        if(myIndex != null){ //caz in care ip ul are un failed login
+            sess.dictCounter[myIndex][1] ++
+        }
+        else{ // caz in care ip ul nu are niciun failed login
+            pair = [clientIp, 1]
+            sess.dictCounter.push(pair)
+        }
+        if(sess.dictCounter[myIndex][1] > 3){ // caz in care utilizatorul are mai mult de 3 failed logins
+            if(sess.dictTimestamp == null){ //caz in care nu exista dictionarul ip - timestampBlocat
+                sess.dictTimestamp = []
+                pair = [clientIp, Date.now()]
+                sess.dictTimestamp.push(pair)
+            }
+            else{
+                for(i in sess.dictTimestamp){
+                    if(sess.dictTimestamp[i][0] == clientIp){
+                        var bIndex = i //fa cu break
+                    }
+                }
+                if(bIndex != null){//caz in care ip ul a fost blocat
+                    console.log("aaa")
+                    sess.dictTimestamp[bIndex][1] += 30000
+                }
+                else{ //ip ul nu a fost blocat
+                    console.log("bb")
+                    pair = [clientIp, Date.now()]
+                    sess.dictTimestamp.push(pair)
+                }
+            }
+        }    
     }
-    console.log(sess.dictCounter[clientIp])
-    // if(sess.loginErrorCnt == null){
-    //     sess.loginErrorCnt = 1
-    // }
-    // else{
-    //     sess.loginErrorCnt ++
-    // }
-    // if(sess.loginErrorCnt > 3){
-    //     if(sess.blockedTimestamp == null){  
-    //         sess.blockedTimestamp = Date.now()
-    //     }
-    //     else{
-    //         sess.blockedTimestamp += 30000
-    //     }
-    // }
-    // console.log(sess.loginErrorCnt)
-    // console.log(sess.blockedTimestamp)
-    // response.cookie('mesajEroare', 'Utilizator sau parola gresite!')
+    // console.log(sess.dictCounter)
+    // console.log(sess.dictTimestamp)
     response.redirect('/autentificare')
     
 

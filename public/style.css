@@ -46,7 +46,7 @@ header{
     background: #ffffff;
 }
 header ul li{
-    padding: 0 15px;
+    padding: 0px 15px;
     border-right: 1px solid #a1a1a1;
 }
 header ul li:last-child{
