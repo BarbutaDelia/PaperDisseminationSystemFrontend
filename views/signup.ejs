@@ -1,0 +1,56 @@
+<section class="min-full-height-section bg-secondary">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-stretch h-100">
+      <div class="col col-xl-10">
+        <div class="card overflow-hidden h-100" style="border-radius: 1rem;">
+          <div class="row g-0 h-100">
+            <div class="col-md-6 col-lg-7 d-none d-md-block login-background">
+            </div>
+            <div class="col-md-6 col-lg-5 py-lg-5 px-lg-3 d-flex align-items-center">
+              <div class="card-body">
+                <form method="POST" action="/signup" id="register-form">
+                  <div class="d-flex justify-content-center align-items-center mb-5">
+                    <span class="h2 fw-bold align-middle mb-0">Create an account</span>
+                  </div>
+                  <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-pen-fill" id="addon-wrapping"></span>
+                    <input type="text" class="form-control form-control-lg" placeholder="Full Name" aria-label="name"
+                      aria-describedby="addon-wrapping" name="name" required>
+                  </div>
+                  <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-wallet-fill" id="addon-wrapping"></span>
+                    <input type="text" class="form-control form-control-lg" placeholder="Metamask Address"
+                      aria-label="Metamask" aria-describedby="addon-wrapping" name="metamask_id" required>
+                  </div>
+                  <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-envelope-fill" id="addon-wrapping"></span>
+                    <input type="email" class="form-control form-control-lg" placeholder="Email" aria-label="Email"
+                      aria-describedby="addon-wrapping" name="email" required>
+                  </div>
+                  <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-lock-fill" id="addon-wrapping"></span>
+                    <input type="password" class="form-control form-control-lg" placeholder="Password"
+                      aria-label="Password" aria-describedby="addon-wrapping" name="password" required>
+                  </div>
+                  <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-briefcase-fill" id="addon-wrapping"></span>
+                    <input type="text" class="form-control form-control-lg" placeholder="Job" aria-label="job"
+                      aria-describedby="addon-wrapping" name="job" required>
+                  </div>
+                  <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-building-fill" id="addon-wrapping"></span>
+                    <input type="text" class="form-control form-control-lg" placeholder="Company" aria-label="company"
+                      aria-describedby="addon-wrapping" name="company" required>
+                  </div>
+                  <div class="d-grid">
+                    <button class="btn btn-warning btn-lg btn-block" type="submit">Register</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

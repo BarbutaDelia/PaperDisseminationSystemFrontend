@@ -1,15 +1,17 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
-const bodyParser = require('body-parser')
-const cookieParser=require('cookie-parser');
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const sqlite3 = require('sqlite3');
 const requestIp = require('request-ip');
-const ipfilter = require('express-ipfilter').IpFilter
+const myApi = require("./myApi")
+const querystring = require('querystring');
+const multer = require('multer');
+const upload = multer();
 
-// app.use(session({secret: 'ssshhhhh'}));
-var sess;
-var databaseNrEntries;
+
+const SECRET_KEY = "PaperDisseminationSystemSecretKey"
 const app = express();
 
 const port = 6789;
@@ -25,356 +27,268 @@ app.use(bodyParser.json());
 // utilizarea unui algoritm de deep parsing care suportă obiecte în obiecte
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser())
-app.use(session({secret: 'ssshhhhh'}))
-// app.use(function(req, res){
-//     if(req.session.blockedIp != null)
-//         ipfilter(req.session.blockedIp, { mode: 'deny' })
-// })
-// la accesarea din browser adresei http://localhost:6789/ se va returna textul 'Hello World'
-// proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
-// proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
-//am nevoie de type in json care poate fi user sau admin
-//de fiecare data cand un utilizator face un request pentru o resursa, iar response-ul e 404 (resursa inexistenta)
-//incrementez counter-ul din sesiune. Cand trece de o anumita valoare, adaug in cookie la blockedIp, ip-ul user-ului
-//si setez durata de viata a cookie-ului cateva minute
-//counter pt incercari nereusite in sesiune. cookie pt blockedLogin
-//injection???
-
-function checkBlacklist(req, res) {
-    let clientIp = requestIp.getClientIp(req);
-    //console.log(clientIp)
-    if(req.session.blockedIp != null){
-        if(req.session.blockedIp.includes(clientIp)){
-            res.render('eroare-resurse')
-            return true
+app.use(
+    session({
+        secret: SECRET_KEY,
+        resave: false,
+        saveUninitialized: true,
+        cookie: {
+            secure: false,
+            httpOnly: true
         }
-    }
-    return false
-}
-app.get('/', (req, res) => {
-    checkBlacklist(req, res)
-    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
-        if(err) {
-            return console.log(err.message);
-        }
-        //  console.log("Conectare reusita!")
-    });
-    db.all(`SELECT * FROM produse`, (err, data) => {
-        if(err) {
-            return console.log(err.message); 
-        }
-        // console.log(data);
-        databaseNrEntries = data.length
-        // console.log(databaseNrEntries)
-        res.render('index', {u: req.session.username, data: data, type: req.session.type})
-        
     })
-})
-    
-const fs = require('fs');   
-const { redirect } = require('express/lib/response');
-const { ClientRequest } = require('http');
-const { response } = require('express');
-const e = require('express');
-const { exit } = require('process');
+);
 
-app.get('/chestionar', (req, res) => {
-    if(!checkBlacklist(req, res)){
-            fs.readFile('intrebari.json', (err, data) => {
-                if (err) throw err;
-                let intrebari = JSON.parse(data);
-            // în fișierul views/chestionar.ejs este accesibilă variabila 'intrebari' care conține vectorul de întrebări
-                res.render('chestionar', {intrebari: intrebari});
-            })
+app.get('/login', (req, res) => {
+    if (req.session.error == null || req.session.error == undefined) {
+        res.render('login', { alert: false, status: false, isLoggedIn: null });
+    }
+    else {
+        let message = req.session.error;
+        req.session.error = null;
+        res.render('login', { alert: true, result: message, status: false, isLoggedIn: null });
     }
 });
-app.post('/rezultat-chestionar', (req, res) => {
-    if(!checkBlacklist(req, res)){
-        fs.readFile('intrebari.json', (err, data) => {
-            if (err) throw err;
-            let intrebari = JSON.parse(data);
-            var punctaj = 0
-            for(let i in intrebari){
-                if(req.body[`q${i}`] == intrebari[i].corect)
-                    punctaj++;
-            }
-            res.render('rezultat-chestionar', {punctaj: punctaj});
-            // console.log(punctaj)
-        })
-    }
-}); 
-app.get('/autentificare', (req, res) => {
-    // res.clearCookie("mesajEroare")
-    // if(req.cookies.utilizator == null)index
-    //     res.render('autentificare', {m: req.cookies.mesajEroare})
-    // res.redirect('/')
-    if(!checkBlacklist(req, res)){
-        sess = req.session;
-        // console.log("timestamp " + sess.blockedTimestamp)
-        let currentDate = Date.now()
-        // console.log("current date " + currentDate)
-        //|| sess.blockedTimestamp + 30000 < currentDate
-        // console.log(sess.dictTimestamp)
-        if(sess.dictTimestamp == null ){
-            if(sess.username != null){
-                res.redirect('/')
-                return
-            }
-            else{
-                res.render('autentificare', {e: req.session.errorMsg})
-                return
-            }
-        }
-        else{
-            // console.log('aici')
-            let clientIp = requestIp.getClientIp(req)
-            for(i in sess.dictTimestamp){
-                if(sess.dictTimestamp[i][0] == clientIp){
-                    var index = i
-                }
-            }
-            if(sess.dictTimestamp[index][1] + 30000 < currentDate){
-                if(sess.username != null){
-                    res.redirect('/')
-                    return
-                }
-                else{
-                    res.render('autentificare', {e: req.session.errorMsg})
-                    return
-                }
-            }
-            res.render('autentificare-esuata')
-        }
-        
-    }
-})
 
-let rawdata = fs.readFileSync('utilizatori.json');
-let utilizatori = JSON.parse(rawdata);
-app.post('/verificare-autentificare', (request, response) => {
-    //console.log(utilizatori)
-    let username = request.body.username;
-	let password = request.body.password;
-    for(let i in utilizatori){
-        if(username == utilizatori[i].utilizator && password == utilizatori[i].parola){
-            sess.loginErrorCnt = 0
-            sess = request.session;
-            sess.username = username;
-            sess.lastName = utilizatori[i].nume;
-            sess.firstName = utilizatori[i].prenume;
-            sess.type = utilizatori[i].tip;
-            sess.dictCounter = null
-            sess.dictTimestamp = null
-            // response.cookie('utilizator', 'delia')
-            response.redirect('/')
-            return //de ce fara asta imi executa codul de dupa redirect??
-        }
-    }
-    sess = request.session
-    sess.errorMsg = "Utilizator sau parola gresite!"
-    let clientIp = requestIp.getClientIp(request)
-    if(sess.dictCounter == null){ // caz in care nu am nimic in dictionatul de ip - counter
-        sess.dictCounter = []
-        var pair = [clientIp, 1]
-        sess.dictCounter.push(pair)
-    }
-    else{
-        // console.log("asa")
-        for(let i in sess.dictCounter){
-            console.log(sess.dictCounter[i][0])
-            if(sess.dictCounter[i][0] == clientIp){
-                var myIndex = i
-                // console.log("aici")
-            }
-        }
-        if(myIndex != null){ //caz in care ip ul are un failed login
-            sess.dictCounter[myIndex][1] ++
-        }
-        else{ // caz in care ip ul nu are niciun failed login
-            pair = [clientIp, 1]
-            sess.dictCounter.push(pair)
-        }
-        if(sess.dictCounter[myIndex][1] > 3){ // caz in care utilizatorul are mai mult de 3 failed logins
-            if(sess.dictTimestamp == null){ //caz in care nu exista dictionarul ip - timestampBlocat
-                sess.dictTimestamp = []
-                pair = [clientIp, Date.now()]
-                sess.dictTimestamp.push(pair)
-            }
-            else{
-                for(i in sess.dictTimestamp){
-                    if(sess.dictTimestamp[i][0] == clientIp){
-                        var bIndex = i //fa cu break
-                    }
-                }
-                if(bIndex != null){//caz in care ip ul a fost blocat
-                    console.log("aaa")
-                    sess.dictTimestamp[bIndex][1] += 30000
-                }
-                else{ //ip ul nu a fost blocat
-                    console.log("bb")
-                    pair = [clientIp, Date.now()]
-                    sess.dictTimestamp.push(pair)
-                }
-            }
-        }    
-    }
-    // console.log(sess.dictCounter)
-    // console.log(sess.dictTimestamp)
-    response.redirect('/autentificare')
-    
-
-});
-app.get('/logout', (req, res) => {
-    if(!checkBlacklist(req, res)){
-        req.session.destroy((err) => {
-            if(err) {
-                return console.log(err);
-            }
+app.post('/login', (req, res) => {
+    let loginReq = req.body
+    myApi.login(loginReq, (results, status) => {
+        if (status) {
+            req.session.token = results;
             res.redirect('/');
-        });
-    }
-})
-app.get('/creare-bd', (req, res) => {
-    new sqlite3.Database('./cumparaturi.db', sqlite3.OPEN_READWRITE, (err) => {
-        if (err && err.code == "SQLITE_CANTOPEN") {
-            createDatabase();
-        } 
-        else if (err) {
-            console.log(err);
-            exit(1);
         }
+        else {
+            res.render('login', { alert: true, result: results, status: false, isLoggedIn: null });
+        }
+    })
+});
+
+app.get('/signup', (req, res) => {
+    res.render('signup', { alert: false, isLoggedIn: null });
+});
+
+app.get('/add-article', (req, res) => {
+    if (req.session.token == null || req.session.token == undefined) {
         res.redirect('/');
-    });
-})
-function createDatabase() {
-    var newdb = new sqlite3.Database('cumparaturi.db', (err) => {
-        if (err) {
-            console.log(err);
-            exit(1);
-        }
-        console.log("Baza de date creata!")
-        createTables(newdb);
-    });
-}
-function createTables(newdb) {
-    newdb.run("CREATE TABLE produse (id_produs PRIMARY KEY NOT NULL, nume_produs TEXT NOT NULL UNIQUE, pret REAL NOT NULL)", function(createResult){
-        if(createResult) 
-            throw createResult;
-    });
-    console.log("Tabela creata!")
-}
-app.get('/inserare-bd', (req, res) => {
-    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
-        if(err) {
-            return console.log(err.message);
-        }
-        //console.log("Conectare reusita!")
-    });
-    db.run(`INSERT INTO produse(id_produs, nume_produs, pret) VALUES (1, 'Semințe de dovleac', 20.5), (2, 'Unt de arahide', 21.5), 
-    (3, 'Lapte de cocos', 49.63), (4, 'Fulgi de ovăz', 15), (5, 'Baton cu nuca', 9.7)`, (err) => {
-        if(err) {
-            return console.log(err.message); 
-        }
-        console.log('Adaugarea s-a realizat cu succes!');
-    })
-    res.redirect('/');
-})
-app.post('/adaugare-cos', (request, response) => {
-    checkBlacklist(request, response)
-    let id = request.body.id
-    sess = request.session
-    sess.productArray = sess.productArray || []; 
-    sess.productArray.push(id)
-    // console.log(sess.productArray)
-    response.redirect('/')
-});
-app.get('/vizualizare-cos', (request, response) => {
-    if(!checkBlacklist(request, response)){
-        // console.log(databaseNrEntries)
-        var productsId
-        var numberOfProducts = []
-        for(let i = 0; i < databaseNrEntries; i++){
-            numberOfProducts[i] = 0
-        }
-        // console.log(numberOfProducts)
-        let db = new sqlite3.Database('./cumparaturi.db', (err) => {
-            if(err) {
-                return console.log(err.message);
+    }
+    else {
+        myApi.getTagLevels(req.session.token, (tagLevels) => {
+            if (req.session.error === null || req.session.error === undefined) {
+                res.render('add-article', { alert: false, isLoggedIn: req.session.token, tagLevels: tagLevels });
+            }
+            else {
+                let message = req.session.error;
+                req.session.error = null;
+                res.render('add-article', { alert: true, result: message, status: false, isLoggedIn: req.session.token, tagLevels: tagLevels });
             }
         });
-        for(i in request.session.productArray)
-        {
-            if(i == 0){
-                productsId = request.session.productArray[i]
-            }
-            if(i > 0 && i < request.session.productArray.length ){
-                productsId += " OR id_produs = " + request.session.productArray[i]
-            }
-            numberOfProducts[request.session.productArray[i] - 1] ++;
-        }
-    // console.log(productsId)
-    // console.log(numberOfProducts)
-        db.all(`SELECT * FROM produse WHERE id_produs = ` + productsId, (err, data) => {
-            if(err) {
-                response.render('vizualizare-cos', {productArray: [], numberOfProducts: numberOfProducts})
-                return console.log(err.message); 
-            }
-            response.render('vizualizare-cos', {productArray: data, numberOfProducts: numberOfProducts})
-            // console.log(data)
-        })
-    }
-    // }
-    // response.render('vizualizare-cos', {productArray: productsId})
-});
-app.get('/admin', (request, response) => {
-    checkBlacklist(request, response)
-    if(request.session.type == "admin"){
-        response.render('admin')
-    }
-    else{
-        response.redirect('/')
     }
 });
-app.post('/inserare-produs', (req, res) => {
-    checkBlacklist(req, res)
-    let productName = req.body.name
-    let productPrice = req.body.price
-    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
-        if(err) {
-            return console.log(err.message);
+
+app.post('/add-article', upload.single('file'), (req, res) => {
+    let title = req.body.title;
+    let description = req.body.description;
+    let authors = [];
+    if (req.body.authors !== "") {
+        authors = req.body.authors.split(',').map(author => author.trim().replace(/\s*,\s*/g, ','));
+    }
+    let tagLevels = req.body.tags;
+    let file = req.file;
+
+    if (tagLevels !== undefined) {
+        tagLevels = tagLevels.reduce((result, current) => {
+            const [tag, level] = current.split(': ');
+            result[tag] = level;
+            return result;
+        }, {});
+    }
+
+    myApi.addArticle({ title, description, authors, tagLevels, file }, req.session.token, (results, status) => {
+        if (status) {
+            req.session.articleId = results;
+            res.redirect('/article-payment');
         }
-        //console.log("Conectare reusita!")
+        else {
+            if (results.includes("Please log in again")) {
+                req.session.token = null;
+                req.session.error = results;
+                return res.redirect('/login');
+            }
+            else {
+                req.session.error = results;
+                res.redirect('/add-article');
+            }
+        }
     });
-    db.all(`SELECT MAX(id_produs) AS maxID FROM produse`, (err, data) => {
-        if(err) {
-            return console.log(err.message); 
-        }
-        let maxId = data[0].maxID
-        db.run(`INSERT INTO produse(id_produs, nume_produs, pret) VALUES (?, ?, ?)`, [maxId + 1, productName, productPrice], (err) => {
-            if(err) {
-                return console.log(err.message); 
-            }
-            // console.log('Adaugarea s-a realizat cu succes!');
-        })
-    })
-    res.redirect('/')
 });
-app.use(function(req, res) {
+
+app.get('/article-payment', (req, res) => {
+    let articleId = req.session.articleId.id;
+    req.session.articleId = null;
+    res.render('article-payment', { articleId: articleId, isLoggedIn: req.session.token })
+});
+
+app.post('/signup', (req, res) => {
+    let signupReq = req.body
+    myApi.registerUser(signupReq, (results, status) => {
+        res.render('signup', { alert: true, result: results, status: status, isLoggedIn: null })
+    });
+})
+
+app.get('/', (req, res) => {
+    myApi.getArticles((results) => {
+        if (req.session.error === null || req.session.error === undefined) {
+            res.render('index', { articles: results, isLoggedIn: req.session.token });
+        }
+        else {
+            let message = req.session.error;
+            req.session.error = null;
+            res.render('index', { alert: true, result: message, status: false, articles: results, isLoggedIn: req.session.token })
+        }
+    });
+});
+
+app.get('/article/:id', (req, res) => {
+    myApi.getArticle(req.params.id, (results, status) => {
+        if (status) {
+            res.render('article', { isLoggedIn: req.session.token, article: results });
+        }
+        else {
+            res.redirect('/');
+        }
+    });
+
+});
+
+app.get('/badges', (req, res) => {
+    if (req.session.token == null || req.session.token == undefined) {
+        res.redirect('/');
+    }
+    else {
+        myApi.getBadges(req.session.token, (results, status) => {
+            if (status) {
+                res.render('badges', { tags: results, isLoggedIn: req.session.token });
+            }
+            else {
+                req.session.token = null;
+                req.session.error = results;
+                return res.redirect('/login');
+            }
+
+        });
+    }
+});
+
+app.get('/test/:id', (req, res) => {
+    myApi.getTest(req.session.token, req.params.id, (results, status) => {
+        if (req.session.error === null || req.session.error === undefined) {
+            if (status) {
+                res.render('test', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
+            }
+            else {
+                return res.redirect('/');
+            }
+        }
+        else {
+            if (results.includes("Please log in again")) {
+                req.session.error = results;
+                req.session.token = null;
+                return res.redirect('/login');
+            }
+            else {
+                let message = req.session.error;
+                req.session.error = null;
+                res.render('test', { alert: true, result: message, status: false, test: results, isLoggedIn: req.session.token, testId: req.params.id })
+            }
+        }
+    });
+});
+
+app.post('/test/:id', (req, res) => {
+    let test = req.body;
+    const answerIds = {
+        answerIds: test.answers.map(Number)
+    };
+    myApi.computeTestScore(req.session.token, req.params.id, answerIds, (results, status) => {
+        if (status) {
+            res.render('view-score', { isLoggedIn: req.session.token, score: results, testId: req.params.id });
+        }
+        else {
+            if (results.includes("Please log in again")) {
+                req.session.error = results;
+                req.session.token = null;
+                return res.redirect('/login');
+            }
+            else {
+                req.session.error = results;
+                console.log(results);
+                res.redirect('/test/' + req.params.id);
+            }
+        }
+    });
+});
+
+app.get('/view-score', (req, res) => {
+    // trebuie verificat daca user ul e autentificat
+    res.render('view-score', { isLoggedIn: req.session.token, score: results, testId: req.params.id });
+});
+
+app.get('/my-badges', (req, res) => {
+    if (req.session.token === null || req.session.token === undefined) {
+        return res.redirect('/');
+    }
+    else {
+        res.render('my-badges', { isLoggedIn: req.session.token});
+    }
+});
+
+app.post('/logout', (req, res) => {
+    myApi.logout(req.session.token, (results, status) => {
+        if (status) {
+            req.session.token = null;
+            res.redirect('/login');
+        }
+        else {
+            if (results === "Unauthorized") {
+                res.redirect('/login');
+            }
+            else {
+                req.session.error = results;
+                res.redirect('/');
+            }
+            // const query = querystring.stringify({
+            //     "alert": true,
+            //     "status": false,
+            //     "result":"Something occured! Please try again later!"
+            // });
+            // res.redirect('/home?' + query);
+            // console.log("here");
+            // req.session.alert = true;
+            // req.session.status = false;
+            // req.session.result = "Something occured! Please try again later!";
+            // res.redirect('/home');
+            // res.render('home', {alert: true, status: false, result: "aaa", isLoggedIn: true});
+
+        }
+    });
+})
+
+app.use(function (req, res) {
     res.status(404);
-    if(res.statusCode == 404){
-        if(req.session.accessCounter == null){
+    if (res.statusCode == 404) {
+        if (req.session.accessCounter == null) {
             req.session.accessCounter = 1
         }
-        else{
-            req.session.accessCounter ++
+        else {
+            req.session.accessCounter++
         }
     }
     // console.log(req.session.accessCounter)
-    if(req.session.accessCounter > 5){
-        req.session.blockedIp = req.session.blockedIp || []; 
+    if (req.session.accessCounter > 5) {
+        req.session.blockedIp = req.session.blockedIp || [];
         let clientIp = requestIp.getClientIp(req);
         // console.log(clientIp);
-        if(!req.session.blockedIp.includes(clientIp)){
+        if (!req.session.blockedIp.includes(clientIp)) {
             req.session.blockedIp.push(clientIp)
             // console.log(req.session.blockedIp)
         }
@@ -382,5 +296,4 @@ app.use(function(req, res) {
     res.render('eroare-404')
     return
 });
-
-app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:`));
+app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:` + port));

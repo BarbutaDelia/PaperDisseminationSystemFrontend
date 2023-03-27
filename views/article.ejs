@@ -1,0 +1,56 @@
+<!-- <section class="py-lg-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-dark text-white d-flex justify-content-between">
+              <h2 class="mb-0">Article Title</h2>
+              <span class="text-muted text-warning">Added on: DD/MM/YYYY</span>
+            </div>
+            <div class="card-body">
+              <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam vel maximus ex, id tempor risus. Nunc semper, justo a tempor feugiat, nisl quam bibendum ipsum, id tempor risus ante eu metus. Sed congue suscipit nunc a viverra. Aliquam congue nisl vitae nisi dictum dictum. Nam a semper odio, non tristique nibh. Ut tempor purus a sapien iaculis accumsan. Sed accumsan quam non gravida vestibulum. Integer dapibus, velit vel aliquet dictum, dolor lacus mollis libero, non luctus ligula enim ut est. Fusce varius, sem in bibendum molestie, est libero blandit quam, vel ullamcorper mauris tellus vitae velit. Sed vel velit id velit varius malesuada. Sed vel velit id velit varius malesuada. Nam at accumsan ante. Nunc vestibulum commodo tellus, ac vestibulum ex porta vel.</p>
+              <div class="row mt-4">
+                <div class="col-md-6">
+                  <h5 class="text-warning">Skills required:</h5>
+                  <ul class="list-unstyled text-dark">
+                    <li>Skill 1 - Beginner</li>
+                    <li>Skill 2 - Intermediate</li>
+                    <li>Skill 3 - Expert</li>
+                  </ul>
+                </div>
+                <div class="col-md-6 d-flex justify-content-end">
+                  <button class="btn btn-warning">Review</button>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-dark text-white d-flex justify-content-end">
+              <span class="text-muted">Reviewable until: DD/MM/YYYY</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+   -->
+<div class="container py-3">
+    <div class="row">
+        <div class="col-md-8 pe-5">
+            <h1><%=article.title %></h1>
+            <div class="mb-3 text-muted">Posted on: <%=article.created_at %></div>
+            <p><%=article.description %>
+            </p>
+        </div>
+        <div class="col-md-4 border-left-yellow px-5">
+            <div class=" position-sticky" style="top: 0;">
+                <h3>Review this article</h3>
+                <div class="mb-3 text-muted">Review until: <%=article.review_until %></div>
+                <% for(let key in article.tagLevels){ %>
+                <ul class="list-unstyled text-dark">
+                    <li><%=key %> - <%=article.tagLevels[key] %></li>
+                </ul>
+                <% } %>
+                <button class="btn btn-warning"><i class="bi bi-star-fill"></i> Review Now</button>
+            </div>
+        </div>
+    </div>
+</div>

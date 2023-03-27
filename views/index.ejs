@@ -1,38 +1,54 @@
-<div class="login-container"> 
-    <% if(u == null){ %>
-        <a href="autentificare"> <- Autentificare -></a>
-    <%} else { %>
-        Bine ai venit, <%=u%>! <a href="logout">Delogare</a>
-    <% } %>
-</div> 
-<div class="bd-container">
-    <form action="/creare-bd" method="get">
-        <input type="submit" value="Creare BD">
-    </form>
-    <form action="/inserare-bd" method="get">
-        <input type="submit" value="Încarcare BD">
-    </form>
-</div>
-<h2>Listă produse:</h2>
-<% for (let i in data) { %>
-    <div class="produs">
-        <div><%= data[i].id_produs %>. <%= data[i].nume_produs %>, <%= data[i].pret %></div>
-        <% if(u != null){ %>
-            <div>
-                <form action="/adaugare-cos" method="post">
-                    <input type="hidden" name="id" value=<%= data[i].id_produs %>>
-                    <input type="submit" value="Adaugă">
-                </form>
-            </div>
+<section id="particles-js" class="bg-secondary py-lg-5 position-relative">
+  <div class="container particles-layout">
+    <div class="row">
+      <div class="col-lg-7">
+        <h1 class="display-4 fst-italic">Explore the redefined way of reviewing articles, using blockchain.</h1>
+        <h2 class="fst-italic">And get paid for it.</h2>
+        <hr class="hero-divider" />
+        <% if(isLoggedIn == null) {%>
+        <div class="">
+          <a class="btn btn-dark me-2" href="/about" role="button">Learn more</a>
+          <a class="btn btn-warning" href="/signup" role="button">Sign-up</a>
+        </div>
         <% } %>
+      </div>
     </div>
-<% } %>
-<div class="bottom-buttons">
-<% if(u != null){ %>
-    <a href="vizualizare-cos">Vizualizare coș</a>
-<% } %>
-<% if(type == "admin"){ %>
-    <a href="admin">Adaugă un produs nou în baza de date</a>
-<% } %>
-</div>
-<!-- la logout fac clear(cookies)-->
+  </div>
+</section>
+<section class="py-lg-5">
+  <div class="container">
+    <div class="row">
+      <% for (let article of articles){ %>
+      <div class="col-md-6 mb-4">
+        <div class="article-card row g-0 border rounded overflow-hidden flex-md-row shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <h3 class="mb-0"><%=article.title %></h3>
+            <div class="mb-1 text-muted"><%=article.created_at %></div>
+            <p class="card-text mb-auto"><%=article.description %></p>
+            <div class="row align-items-center mt-1">
+              <div class="col-lg-6">
+                <a href="/article/<%=article.id %>" class="stretched-link text-warning">Continue reading</a>
+              </div>
+              <div class="col-lg-6 d-flex justify-content-end">
+                <div class="category-container d-flex justify-content-end">
+                  <% for (let tagName of article.tagNames){ %>
+                  <div>
+                    <span class="text-warning"><%=tagName %></span>
+                  </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-auto d-none d-lg-block bg-dark-gray p-4 text-center text-warning">
+            <i class="bi bi-newspaper article-thumbnail"></i>
+          </div>
+        </div>
+      </div>
+      <% } %>
+</section>
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.js"></script>
+<script>
+  particlesJS.load('particles-js', 'js/particles.json', function() {
+  });
+</script>

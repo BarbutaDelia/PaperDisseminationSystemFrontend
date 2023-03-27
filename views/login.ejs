@@ -1,0 +1,60 @@
+<!-- <div class="container-fluid py-3 position-fixed top-0 end-0" style="z-index: 1;">
+  <div class="row">
+    <div class="col-lg-8"></div>
+    <div class="col-lg-4" id="alert-container">
+      <%# if (alert) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong><%#=result %></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <%# } %>
+    </div>
+  </div>
+</div> -->
+<section class="full-height-section bg-secondary">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-stretch h-100">
+      <div class="col col-xl-10">
+        <div class="card overflow-hidden h-100" style="border-radius: 1rem;">
+          <div class="row g-0 h-100">
+            <div class="col-md-6 col-lg-7 d-none d-md-block login-background">
+            </div>
+            <div class="col-md-6 col-lg-5 py-lg-5 d-flex align-items-center ">
+              <div class="card-body py-lg-5">
+                <form method="POST" action="/login" id="login-form">
+                  <div class="d-flex justify-content-center align-items-center mb-5">
+                    <span class="h2 fw-bold align-middle mb-0">Login to continue</span>
+                  </div>
+
+                  <!-- <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-envelope-fill" id="addon-wrapping"></span>
+                    <input type="email" class="form-control form-control-lg" placeholder="Email" aria-label="Email"
+                      aria-describedby="addon-wrapping" name="email" required>
+                  </div>
+
+                  <div class="input-group flex-nowrap mb-3">
+                    <span class="input-group-text bi-lock-fill" id="addon-wrapping"></span>
+                    <input type="password" class="form-control form-control-lg" placeholder="Password"
+                      aria-label="Password" aria-describedby="addon-wrapping" name="password" required>
+                  </div> -->
+                  <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="floatingInput" placeholder="Email" name="email" required>
+                    <label for="floatingInput">Email address</label>
+                  </div>
+                  <div class="form-floating flex-nowrap mb-3">
+                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password" required>
+                    <label for="floatingPassword">Password</label>
+                  </div>
+
+                  <div class="d-grid">
+                    <button class="btn btn-warning btn-lg btn-block" type="submit">Login</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
