@@ -48,7 +48,7 @@ for (let i = 0; i < nftsBalance; i++) {
     nftTokenElement.querySelector('img').src = tokenMetadataImage;
     nftTokenElement.querySelector('p').innerHTML = tokenMetadata['description'];
     nftTokenElement.querySelector('#title').innerHTML = tokenMetadata.name;
-    nftTokenElement.querySelector('#view-opensea').href = OPENSEA_URL + NFTcontractAddress + "/" + (i + 1);
+    // nftTokenElement.querySelector('#view-opensea').href = OPENSEA_URL + NFTcontractAddress + "/" + (i + 1);
     console.log(tokenMetadata);
 
     document.getElementById('nfts').append(nftTokenElement);

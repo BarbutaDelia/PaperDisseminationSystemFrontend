@@ -34,7 +34,7 @@ exports.login = async function (loginReq, f) {
   if (res.ok) {
     res = await res.json()
     let status = true
-    f(res.token, status)
+    f(res, status)
   }
   else {
     res = await res.text();
@@ -257,7 +257,6 @@ exports.computeTestScore = async function (token, id, answerIds, callback) {
   });
   if (res.ok) {
     res = await res.json();
-    console.log(res);
     let status = true;
     callback(res, status);
   }
@@ -269,5 +268,26 @@ exports.computeTestScore = async function (token, id, answerIds, callback) {
       res = await res.text();
       callback(res, false);
     }
+  }
+}
+
+exports.getCIDForLatestTest = async function (token, userId, tagId, callback) {
+  let res = await fetch(API_URL + "/userTests?userId=" + userId + "&tagId=" + tagId, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (res.ok) {
+    res = await res.json();
+    callback(res, true);
+  }
+  else {
+    if (res.status === 401) {
+      callback("Session expired! Please log in again!", false);
+    }
+    res = await res.text();
+    callback(res, false);
   }
 }

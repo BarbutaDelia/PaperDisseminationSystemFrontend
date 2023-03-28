@@ -39,6 +39,7 @@ app.use(
     })
 );
 
+// TODO unde e req.session.token = null trebuie si req.session.userId = null;
 app.get('/login', (req, res) => {
     if (req.session.error == null || req.session.error == undefined) {
         res.render('login', { alert: false, status: false, isLoggedIn: null });
@@ -54,7 +55,8 @@ app.post('/login', (req, res) => {
     let loginReq = req.body
     myApi.login(loginReq, (results, status) => {
         if (status) {
-            req.session.token = results;
+            req.session.token = results.token;
+            req.session.userId = results.id;
             res.redirect('/');
         }
         else {
@@ -166,15 +168,21 @@ app.get('/badges', (req, res) => {
     }
     else {
         myApi.getBadges(req.session.token, (results, status) => {
-            if (status) {
-                res.render('badges', { tags: results, isLoggedIn: req.session.token });
+            if (req.session.error == null || req.session.error == undefined) {
+                if (status) {
+                    res.render('badges', { tags: results, isLoggedIn: req.session.token });
+                }
+                else {
+                    req.session.token = null;
+                    req.session.error = results;
+                    return res.redirect('/login');
+                }
             }
             else {
-                req.session.token = null;
-                req.session.error = results;
-                return res.redirect('/login');
+                let message = req.session.error;
+                req.session.error = null;
+                res.render('badges', { alert: true, result: message, status: false, tags: results, isLoggedIn: req.session.token });
             }
-
         });
     }
 });
@@ -186,32 +194,49 @@ app.get('/test/:id', (req, res) => {
                 res.render('test', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
             }
             else {
-                return res.redirect('/');
+                if (results.includes("Sorry, you have attempted the test too recently")) {
+                    req.session.error = results;
+                    return res.redirect('/badges');
+                }
+                if (results.includes("Please obtain your badge")) {
+                    req.session.error = results;
+                    req.session.tagId = req.params.id;
+                    return res.redirect('/view-score');
+                }
+                if (results.includes("Please log in again")) {
+                    req.session.error = results;
+                    req.session.token = null;
+                    return res.redirect('/login');
+                }
+                else {
+                    return res.redirect('/');
+                }
             }
         }
         else {
-            if (results.includes("Please log in again")) {
-                req.session.error = results;
-                req.session.token = null;
-                return res.redirect('/login');
-            }
-            else {
-                let message = req.session.error;
-                req.session.error = null;
-                res.render('test', { alert: true, result: message, status: false, test: results, isLoggedIn: req.session.token, testId: req.params.id })
-            }
+            req.session.error = results;
+            req.session.tagId = req.params.id;
+            return res.redirect('/view-score');
         }
     });
 });
 
 app.post('/test/:id', (req, res) => {
     let test = req.body;
-    const answerIds = {
-        answerIds: test.answers.map(Number)
-    };
+    let answerIds;
+    if (test.answers !== undefined) {
+        answerIds = {
+            answerIds: test.answers.map(Number)
+        };
+    }
+    else {
+        answerIds = {
+            answerIds: []
+        };
+    }
     myApi.computeTestScore(req.session.token, req.params.id, answerIds, (results, status) => {
         if (status) {
-            res.render('view-score', { isLoggedIn: req.session.token, score: results, testId: req.params.id });
+            res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
         }
         else {
             if (results.includes("Please log in again")) {
@@ -221,7 +246,6 @@ app.post('/test/:id', (req, res) => {
             }
             else {
                 req.session.error = results;
-                console.log(results);
                 res.redirect('/test/' + req.params.id);
             }
         }
@@ -229,8 +253,40 @@ app.post('/test/:id', (req, res) => {
 });
 
 app.get('/view-score', (req, res) => {
-    // trebuie verificat daca user ul e autentificat
-    res.render('view-score', { isLoggedIn: req.session.token, score: results, testId: req.params.id });
+    if (req.session.error === null || req.session.error === undefined) {
+        if (req.session.token === null || req.session.token === undefined) {
+            return res.redirect('/');
+        }
+        else {
+            try {
+                var validJson = JSON.parse(results);
+                res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
+            } catch (e) {
+                return res.redirect('/badges');
+            }
+        }
+    }
+    else {
+        req.session.error = null;
+        let tagId = req.session.tagId;
+        req.session.tagId = null;
+        myApi.getCIDForLatestTest(req.session.token, req.session.userId, tagId, (results, status) => {
+            if (status) {
+                res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: tagId });
+            }
+            else {
+                if (results.includes("Please log in again")) {
+                    req.session.error = results;
+                    req.session.token = null;
+                    return res.redirect('/login');
+                }
+                else {
+                    req.session.error = results;
+                    return res.redirect('/badges');
+                }
+            }
+        });
+    }
 });
 
 app.get('/my-badges', (req, res) => {
@@ -238,7 +294,7 @@ app.get('/my-badges', (req, res) => {
         return res.redirect('/');
     }
     else {
-        res.render('my-badges', { isLoggedIn: req.session.token});
+        res.render('my-badges', { isLoggedIn: req.session.token });
     }
 });
 
@@ -246,6 +302,7 @@ app.post('/logout', (req, res) => {
     myApi.logout(req.session.token, (results, status) => {
         if (status) {
             req.session.token = null;
+            req.session.userId = null;
             res.redirect('/login');
         }
         else {
@@ -256,19 +313,6 @@ app.post('/logout', (req, res) => {
                 req.session.error = results;
                 res.redirect('/');
             }
-            // const query = querystring.stringify({
-            //     "alert": true,
-            //     "status": false,
-            //     "result":"Something occured! Please try again later!"
-            // });
-            // res.redirect('/home?' + query);
-            // console.log("here");
-            // req.session.alert = true;
-            // req.session.status = false;
-            // req.session.result = "Something occured! Please try again later!";
-            // res.redirect('/home');
-            // res.render('home', {alert: true, status: false, result: "aaa", isLoggedIn: true});
-
         }
     });
 })
