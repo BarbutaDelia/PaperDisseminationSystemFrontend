@@ -7,8 +7,9 @@
                 <h2 class="fst-italic">We kindly ask you not to review an article unless you have finished reading it!
                 </h2>
                 <div class="">
-                    <a class="btn btn-warning" href="http://localhost:8080/api/articles/77/download-article" role="button">Download Article</a>
-                </div>                
+                    <a class="btn btn-warning" href="http://localhost:8080/api/articles/77/download-article"
+                        role="button">Download Article</a>
+                </div>
             </div>
         </div>
     </div>
@@ -18,7 +19,7 @@
     <div class="container">
         <div class="row">
             <div class="col-md-8 mx-auto">
-                <form id="add-article-form" action="/review-article" method="POST">
+                <form id="add-article-form" action="/review-article/<%=articleId %>" method="POST">
                     <% for(let reviewCriterion of reviewCriteria){ %>
                         <div class="py-3">
                             <label for="reviewCriterion_<%=reviewCriterion.id %> " class="form-label">
@@ -29,17 +30,20 @@
                             <div class="d-flex align-items-center">
                                 <input type="range" class="form-range me-3" min="<%=reviewCriterion.minGrade %>"
                                     max="<%=reviewCriterion.maxGrade %>" step="1"
-                                    id="reviewCriterion_<%=reviewCriterion.id %>">
+                                    id="reviewCriterion_<%=reviewCriterion.id %>"
+                                    name="reviewCriterion[criterion_id_<%=reviewCriterion.id%>]"
+                                    value="5">
                                 <span id="slider-value"></span>
                             </div>
                         </div>
                         <% } %>
                             <div class="py-3">
-                                <label for="description">Recommendations</label>
-                                <textarea class="form-control" id="description" name="description"
+                                <label for="recommendation">Recommendations</label>
+                                <textarea class="form-control" id="recommendation" name="recommendation"
                                     placeholder="This section is meant to help the authors improve the quality of their work"
                                     required></textarea>
                             </div>
+                            <input type="hidden" name="articleId" value="<%=articleId%>">
                             <div class="py-3">
                                 <button type="submit" class="btn btn-warning">Submit review</button>
                             </div>

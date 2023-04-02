@@ -312,3 +312,27 @@ exports.getReviewCriteria = async function (token, articleId, callback) {
     callback(res, false);
   }
 }
+
+exports.submitReview = async function (token, reviewReq, callback) {
+  let res = await fetch(API_URL + "/reviews", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    },
+    body: JSON.stringify(reviewReq)
+  });
+  if (res.ok) {
+    let status = true;
+    callback("Your review has been submitted, thank you for your contribution!", status);
+  }
+  else {
+    if (res.status == 401) {
+      callback("Session expired! Please log in again!", false);
+    }
+    else {
+      res = await res.text();
+      callback(res, false);
+    }
+  }
+}

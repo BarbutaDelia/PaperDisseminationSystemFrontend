@@ -152,15 +152,22 @@ app.get('/', (req, res) => {
 
 app.get('/article/:id', (req, res) => {
     myApi.getArticle(req.params.id, (results, status) => {
-        if(req.session.error === null || req.session.error === undefined){
-            if (status) {
-                res.render('article', { isLoggedIn: req.session.token, article: results });
+        if (req.session.error === null || req.session.error === undefined) {
+            if (req.session.reviewMessage === null || req.session.reviewMessage === undefined) {
+                if (status) {
+                    res.render('article', { isLoggedIn: req.session.token, article: results });
+                }
+                else {
+                    res.redirect('/');
+                }
             }
             else {
-                res.redirect('/');
+                let message = req.session.reviewMessage;
+                req.session.reviewMessage = null;
+                res.render('article', { alert: true, result: message, status: true, isLoggedIn: req.session.token, article: results });
             }
         }
-        else{
+        else {
             let message = req.session.error;
             req.session.error = null;
             res.render('article', { alert: true, result: message, status: false, isLoggedIn: req.session.token, article: results });
@@ -311,10 +318,10 @@ app.get('/review-article/:id', (req, res) => {
     }
     else {
         myApi.getReviewCriteria(req.session.token, req.params.id, (results, status) => {
-            if(status){
-                res.render('review-article', { isLoggedIn: req.session.token, reviewCriteria: results });
+            if (status) {
+                res.render('review-article', { isLoggedIn: req.session.token, reviewCriteria: results, articleId: req.params.id });
             }
-            else{
+            else {
                 if (results.includes("Please log in again")) {
                     req.session.error = results;
                     req.session.token = null;
@@ -327,6 +334,39 @@ app.get('/review-article/:id', (req, res) => {
             }
         });
     }
+});
+
+app.post('/review-article/:id', (req, res) => {
+    let reviewReq = req.body;
+    let reviewCriteriaGrades = Object.keys(reviewReq.reviewCriterion).reduce((result, key) => {
+        let criterionId = key.split('_')[2];
+        result[criterionId] = parseInt(reviewReq.reviewCriterion[key]);
+        return result;
+    }, {});
+
+    let finalReq = {
+        articleId: parseInt(reviewReq.articleId),
+        reviewCriteriaGrades: reviewCriteriaGrades,
+        recommendation: reviewReq.recommendation
+    };
+    myApi.submitReview(req.session.token, finalReq, (results, status) => {
+        if (status) {
+            // req.session.submittedReview = "Your review has been submitted, thank you for your contribution!"
+            // return res.redirect('/') sau res.redirect('/article/id');
+            req.session.reviewMessage = results;
+            return res.redirect('/article/' + req.params.id);
+        }
+        else {
+            if (results.includes("Please log in again")) {
+                req.session.error = results;
+                req.session.token = null;
+                return res.redirect('/login');
+            }
+            else {
+
+            }
+        }
+    });
 });
 
 app.post('/logout', (req, res) => {
