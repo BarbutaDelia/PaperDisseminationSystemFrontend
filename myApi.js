@@ -291,3 +291,24 @@ exports.getCIDForLatestTest = async function (token, userId, tagId, callback) {
     callback(res, false);
   }
 }
+
+exports.getReviewCriteria = async function (token, articleId, callback) {
+  let res = await fetch(API_URL + "/reviewCriterion?articleId=" + articleId, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (res.ok) {
+    res = await res.json();
+    callback(res, true);
+  }
+  else {
+    if (res.status === 401) {
+      callback("Session expired! Please log in again!", false);
+    }
+    res = await res.text();
+    callback(res, false);
+  }
+}

@@ -1,0 +1,51 @@
+<section class="bg-secondary py-lg-5 position-relative">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <h1 class="display-4 fst-italic">Review an article</h1>
+                <hr class="hero-divider" />
+                <h2 class="fst-italic">We kindly ask you not to review an article unless you have finished reading it!
+                </h2>
+                <div class="">
+                    <a class="btn btn-warning" href="http://localhost:8080/api/articles/77/download-article" role="button">Download Article</a>
+                </div>                
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <form id="add-article-form" action="/review-article" method="POST">
+                    <% for(let reviewCriterion of reviewCriteria){ %>
+                        <div class="py-3">
+                            <label for="reviewCriterion_<%=reviewCriterion.id %> " class="form-label">
+                                <%=reviewCriterion.name %>
+                                    <i class="bi bi-info-circle" data-bs-toggle="tooltip" data-bs-placement="right"
+                                        title="<%= reviewCriterion.description %>"></i>
+                            </label>
+                            <div class="d-flex align-items-center">
+                                <input type="range" class="form-range me-3" min="<%=reviewCriterion.minGrade %>"
+                                    max="<%=reviewCriterion.maxGrade %>" step="1"
+                                    id="reviewCriterion_<%=reviewCriterion.id %>">
+                                <span id="slider-value"></span>
+                            </div>
+                        </div>
+                        <% } %>
+                            <div class="py-3">
+                                <label for="description">Recommendations</label>
+                                <textarea class="form-control" id="description" name="description"
+                                    placeholder="This section is meant to help the authors improve the quality of their work"
+                                    required></textarea>
+                            </div>
+                            <div class="py-3">
+                                <button type="submit" class="btn btn-warning">Submit review</button>
+                            </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<script src="/js/reviewArticle.js"></script>

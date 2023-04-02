@@ -152,11 +152,18 @@ app.get('/', (req, res) => {
 
 app.get('/article/:id', (req, res) => {
     myApi.getArticle(req.params.id, (results, status) => {
-        if (status) {
-            res.render('article', { isLoggedIn: req.session.token, article: results });
+        if(req.session.error === null || req.session.error === undefined){
+            if (status) {
+                res.render('article', { isLoggedIn: req.session.token, article: results });
+            }
+            else {
+                res.redirect('/');
+            }
         }
-        else {
-            res.redirect('/');
+        else{
+            let message = req.session.error;
+            req.session.error = null;
+            res.render('article', { alert: true, result: message, status: false, isLoggedIn: req.session.token, article: results });
         }
     });
 
@@ -295,6 +302,30 @@ app.get('/my-badges', (req, res) => {
     }
     else {
         res.render('my-badges', { isLoggedIn: req.session.token });
+    }
+});
+
+app.get('/review-article/:id', (req, res) => {
+    if (req.session.token === null || req.session.token === undefined) {
+        return res.redirect('/');
+    }
+    else {
+        myApi.getReviewCriteria(req.session.token, req.params.id, (results, status) => {
+            if(status){
+                res.render('review-article', { isLoggedIn: req.session.token, reviewCriteria: results });
+            }
+            else{
+                if (results.includes("Please log in again")) {
+                    req.session.error = results;
+                    req.session.token = null;
+                    return res.redirect('/login');
+                }
+                else {
+                    req.session.error = results;
+                    return res.redirect('/article/' + req.params.id);
+                }
+            }
+        });
     }
 });
 
