@@ -1,0 +1,37 @@
+</section>
+<section class="py-lg-5">
+  <div class="container">
+    <div class="row">
+      <% for (let article of articles){ %>
+      <div class="col-md-6 mb-4">
+        <div class="article-card row g-0 border rounded overflow-hidden flex-md-row shadow-sm h-md-250 position-relative">
+          <div class="col p-4 d-flex flex-column position-static">
+            <h3 class="mb-0"><%=article.title %></h3>
+            <div class="mb-1 text-muted"><%=article.created_at %></div>
+            <p class="card-text mb-auto"><%=article.description %></p>
+            <div class="row align-items-center mt-1">
+              <div class="col-lg-6">
+                <% if(article.articleGrade != null){ %>
+                    <a href="/article/<%=article.id %>" class="stretched-link text-warning">View reviews</a>
+                <% } else { %>
+                    <div class="mb-1 text-muted">Article Grade: --</div>
+                <% } %>
+              </div>
+              <div class="col-lg-6 d-flex justify-content-end">
+                <div class="category-container d-flex justify-content-end">
+                  <% for (let tagName of article.tagNames){ %>
+                  <div>
+                    <span class="text-warning"><%=tagName %></span>
+                  </div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-auto d-none d-lg-block bg-dark-gray p-4 text-center text-warning">
+            <i class="bi bi-newspaper article-thumbnail"></i>
+          </div>
+        </div>
+      </div>
+      <% } %>
+</section>

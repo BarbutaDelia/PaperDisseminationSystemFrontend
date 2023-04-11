@@ -52,7 +52,7 @@ function formatDate(dateTime) {
 }
 
 exports.getArticles = async function (f) {
-  let res = await fetch(API_URL + "/articles?payment_status=true", {
+  let res = await fetch(API_URL + "/articles?paymentStatus=true", {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
@@ -334,5 +334,26 @@ exports.submitReview = async function (token, reviewReq, callback) {
       res = await res.text();
       callback(res, false);
     }
+  }
+}
+
+exports.getUserArticles = async function (token, userId, callback) {
+  let res = await fetch(API_URL + "/articles?paymentStatus=true&userId=" + userId, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  if (res.ok) {
+    res = await res.json()
+    for (let article of res) {
+      article.created_at = formatDate(article.created_at)
+      formatTagNames(article.tagNames)
+    }
+    callback(res)
+  }
+  else {
+    res = await res.text();
+    callback(res)
   }
 }

@@ -386,7 +386,18 @@ app.post('/logout', (req, res) => {
             }
         }
     });
-})
+});
+
+app.get('/my-articles', (req, res) => {
+    if (req.session.token === null || req.session.token === undefined) {
+        return res.redirect('/');
+    }
+    else {
+        myApi.getUserArticles(req.session.token, req.session.userId, (results) => {
+            res.render('my-articles', { articles: results, isLoggedIn: req.session.token });
+        });
+    }
+});
 
 app.use(function (req, res) {
     res.status(404);
