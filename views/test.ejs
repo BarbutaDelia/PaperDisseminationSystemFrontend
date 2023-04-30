@@ -1,13 +1,24 @@
-<section class="lg-5">
-    <div class="p-5">
+<section class="bg-secondary py-lg-5 position-relative">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <h1 class="display-4 fst-italic">Nume badge</h1>
+          <hr class="hero-divider" />
+          <div class="h3 fw-normal">Advanced</div>
+        </div>
+      </div>
+    </div>
+  </section>
+<section class="py-5">
+    <div class="container">
         <form method="POST" action="/test/<%=testId%>" id="quiz-form">
             <% for (let i=0; i < test.length; i++) { %>
-                <div class="container-question">
-                    <div class="question ml-sm-5 pl-sm-5 pt-2">
-                        <div class="py-2 h3" id="<%=test[i].questionId %>" name="question-<%=test[i].questionId %>">
+                <div class="container-question mb-5">
+                    <div class="question">
+                        <div class="h3 mb-3" id="<%=test[i].questionId %>" name="question-<%=test[i].questionId %>">
                             <%=i + 1 %>. <%=test[i].question %>
                         </div>
-                        <div class="ml-md-3 ml-sm-3 pl-md-5 pt-sm-0 pt-3" id="options">
+                        <div class="" id="options">
                             <% for (let j=0; j < test[i].answerIds.length; j++){ %>
                                 <label class="options">
                                     <%=test[i].answers[j] %>
@@ -21,7 +32,7 @@
                 </div>
             <% } %>
             <% if(test.length !=0){ %>
-                <div class="col-12 py-3">
+                <div class="col-12">
                     <div class="d-flex justify-content-center">
                         <button class="btn btn-warning px-4 py-2" type="submit">Finish</button>
                     </div>

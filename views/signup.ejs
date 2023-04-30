@@ -12,35 +12,29 @@
                   <div class="d-flex justify-content-center align-items-center mb-5">
                     <span class="h2 fw-bold align-middle mb-0">Create an account</span>
                   </div>
-                  <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-pen-fill" id="addon-wrapping"></span>
-                    <input type="text" class="form-control form-control-lg" placeholder="Full Name" aria-label="name"
-                      aria-describedby="addon-wrapping" name="name" required>
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingInput" placeholder="Full Name" name="name" value="<%= user ? user.name : '' %>" required>
+                    <label for="floatingInput">Full Name</label>
                   </div>
-                  <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-wallet-fill" id="addon-wrapping"></span>
-                    <input type="text" class="form-control form-control-lg" placeholder="Metamask Address"
-                      aria-label="Metamask" aria-describedby="addon-wrapping" name="metamask_id" required>
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingInput" placeholder="Metamask Address" name="metamask_id" value="<%= user ? user.metamask_id : '' %>" required>
+                    <label for="floatingInput">Metamask Address</label>
                   </div>
-                  <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-envelope-fill" id="addon-wrapping"></span>
-                    <input type="email" class="form-control form-control-lg" placeholder="Email" aria-label="Email"
-                      aria-describedby="addon-wrapping" name="email" required>
+                  <div class="form-floating mb-3">
+                    <input type="email" class="form-control" id="floatingInput" placeholder="Email" name="email" value="<%= user ? user.email : '' %>" required>
+                    <label for="floatingInput">Email address</label>
                   </div>
-                  <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-lock-fill" id="addon-wrapping"></span>
-                    <input type="password" class="form-control form-control-lg" placeholder="Password"
-                      aria-label="Password" aria-describedby="addon-wrapping" name="password" required>
+                  <div class="form-floating flex-nowrap mb-3">
+                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password" value="<%= user ? user.password : '' %>" required>
+                    <label for="floatingPassword">Password</label>
                   </div>
-                  <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-briefcase-fill" id="addon-wrapping"></span>
-                    <input type="text" class="form-control form-control-lg" placeholder="Job" aria-label="job"
-                      aria-describedby="addon-wrapping" name="job" required>
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingInput" placeholder="Job" name="job" value="<%= user ? user.job : '' %>" required>
+                    <label for="floatingInput">Job</label>
                   </div>
-                  <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-building-fill" id="addon-wrapping"></span>
-                    <input type="text" class="form-control form-control-lg" placeholder="Company" aria-label="company"
-                      aria-describedby="addon-wrapping" name="company" required>
+                  <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="floatingInput" placeholder="Company" name="company" value="<%= user ? user.company : '' %>" required>
+                    <label for="floatingInput">Company</label>
                   </div>
                   <div class="d-grid">
                     <button class="btn btn-warning btn-lg btn-block" type="submit">Register</button>

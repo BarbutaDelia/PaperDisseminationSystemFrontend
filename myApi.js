@@ -293,7 +293,7 @@ exports.getCIDForLatestTest = async function (token, userId, tagId, callback) {
 }
 
 exports.getReviewCriteria = async function (token, articleId, callback) {
-  let res = await fetch(API_URL + "/reviewCriterion?articleId=" + articleId, {
+  let res = await fetch(API_URL + "/reviewCriteria?articleId=" + articleId, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -341,7 +341,8 @@ exports.getUserArticles = async function (token, userId, callback) {
   let res = await fetch(API_URL + "/articles?paymentStatus=true&userId=" + userId, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
     }
   });
   if (res.ok) {
@@ -350,10 +351,87 @@ exports.getUserArticles = async function (token, userId, callback) {
       article.created_at = formatDate(article.created_at)
       formatTagNames(article.tagNames)
     }
-    callback(res)
+    callback(res, true)
   }
   else {
     res = await res.text();
-    callback(res)
+    callback(res, false)
+  }
+}
+
+exports.getArticleReviews = async function (token, articleId, callback) {
+  let res = await fetch(API_URL + "/reviews?articleId=" + articleId, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (res.ok) {
+    res = await res.json();
+    callback(res, true);
+  }
+  else {
+    if (res.status == 401) {
+      callback("Session expired! Please log in again!", false);
+    }
+    else{
+      res = await res.text();
+      console.log(res);
+      callback(res, false);
+    }
+  }
+}
+
+exports.getReviewCriteriaForUserReviews = async function (token, callback) {
+  let res = await fetch(API_URL + "/reviewCriteria", {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (res.ok) {
+    res = await res.json();
+    callback(res, true);
+  }
+  else {
+    if (res.status === 401) {
+      callback("Session expired! Please log in again!", false);
+    }
+    res = await res.text();
+    callback(res, false);
+  }
+}
+
+function formatEarnedAmount(review) {
+  if (review.earnedAmount !== null) {
+    review.earnedAmount = parseFloat(review.earnedAmount.toFixed(4));
+  }
+  return review;
+}
+
+exports.getUserReviews = async function (token, userId, callback) {
+  let res = await fetch(API_URL + "/reviews?userId=" + userId, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (res.ok) {
+    res = await res.json();
+    res = res.map(formatEarnedAmount);
+    callback(res, true);
+  }
+  else {
+    if (res.status == 401) {
+      callback("Session expired! Please log in again!", false);
+    }
+    else{
+      res = await res.text();
+      console.log(res);
+      callback(res, false);
+    }
   }
 }

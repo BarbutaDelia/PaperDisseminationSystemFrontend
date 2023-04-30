@@ -25,27 +25,15 @@
                   <div class="d-flex justify-content-center align-items-center mb-5">
                     <span class="h2 fw-bold align-middle mb-0">Login to continue</span>
                   </div>
-
-                  <!-- <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-envelope-fill" id="addon-wrapping"></span>
-                    <input type="email" class="form-control form-control-lg" placeholder="Email" aria-label="Email"
-                      aria-describedby="addon-wrapping" name="email" required>
-                  </div>
-
-                  <div class="input-group flex-nowrap mb-3">
-                    <span class="input-group-text bi-lock-fill" id="addon-wrapping"></span>
-                    <input type="password" class="form-control form-control-lg" placeholder="Password"
-                      aria-label="Password" aria-describedby="addon-wrapping" name="password" required>
-                  </div> -->
                   <div class="form-floating mb-3">
-                    <input type="email" class="form-control" id="floatingInput" placeholder="Email" name="email" required>
+                    <input type="email" class="form-control" id="floatingInput" placeholder="Email" name="email" value="<%=user.email %>" required>
                     <label for="floatingInput">Email address</label>
                   </div>
+                  
                   <div class="form-floating flex-nowrap mb-3">
-                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password" required>
+                    <input type="password" class="form-control" id="floatingPassword" placeholder="Password" name="password" value="<%=user.password %>" required>
                     <label for="floatingPassword">Password</label>
                   </div>
-
                   <div class="d-grid">
                     <button class="btn btn-warning btn-lg btn-block" type="submit">Login</button>
                   </div>

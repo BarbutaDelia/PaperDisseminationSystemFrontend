@@ -2,6 +2,12 @@
 <section class="py-lg-5">
   <div class="container">
     <div class="row">
+      <div class="col-lg-12">
+          <h1 class="display-4 fst-italic">My Articles</h1>
+          <hr class="hero-divider" />
+      </div>
+    </div>
+    <div class="row">
       <% for (let article of articles){ %>
       <div class="col-md-6 mb-4">
         <div class="article-card row g-0 border rounded overflow-hidden flex-md-row shadow-sm h-md-250 position-relative">
@@ -12,9 +18,9 @@
             <div class="row align-items-center mt-1">
               <div class="col-lg-6">
                 <% if(article.articleGrade != null){ %>
-                    <a href="/article/<%=article.id %>" class="stretched-link text-warning">View reviews</a>
+                    <a href="/my-article-reviews/<%=article.id %>" class="stretched-link text-warning">View reviews</a>
                 <% } else { %>
-                    <div class="mb-1 text-muted">Article Grade: --</div>
+                    <a href="/article/<%=article.id %>" class="stretched-link text-warning">Continue reading</a>
                 <% } %>
               </div>
               <div class="col-lg-6 d-flex justify-content-end">

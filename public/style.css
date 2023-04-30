@@ -2,6 +2,19 @@ body {
   min-height: 100vh;
   padding-bottom: 56px;
 }
+/* header */
+#alert-container-map{
+  top: 15px;
+  right: 15px;
+  z-index: 1;
+}
+header .nav .nav-link{
+  color: #fff;
+}
+header .nav .nav-link:hover{
+  color: #cccccc;
+}
+/* end header */
 footer {
   position: fixed;
   width: 100%;
@@ -15,10 +28,6 @@ footer {
 }
 .full-height-section {
   height: calc(100vh - 128px);
-}
-.particles-layout {
-  z-index: 1;
-  /* position: relative; */
 }
 .border-left-yellow {
   border-left: 1px solid #cecece;
@@ -66,7 +75,6 @@ hr.hero-divider {
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3; /* start showing ellipsis when 3rd line is reached */
-  white-space: pre-wrap;
 }
 /* category */
 .category-container div {
@@ -172,6 +180,7 @@ h6 {
   position: relative;
   overflow: hidden;
   transition: 0.3s;
+  z-index: 0;
 }
 .badge-text {
   width: 100%;
@@ -207,11 +216,11 @@ h6 {
     cursor: pointer;
 }
 .options input{
-    opacity: 0;
+    display: none;
 }
 .checkmark {
     position: absolute;
-    top: -1px;
+    top: 3px;
     left: 0;
     height: 25px;
     width: 25px;

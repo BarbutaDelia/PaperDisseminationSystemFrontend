@@ -42,12 +42,12 @@ app.use(
 // TODO unde e req.session.token = null trebuie si req.session.userId = null;
 app.get('/login', (req, res) => {
     if (req.session.error == null || req.session.error == undefined) {
-        res.render('login', { alert: false, status: false, isLoggedIn: null });
+        res.render('login', { alert: false, status: false, isLoggedIn: null, user: {email: '', password: ''} });
     }
     else {
         let message = req.session.error;
         req.session.error = null;
-        res.render('login', { alert: true, result: message, status: false, isLoggedIn: null });
+        res.render('login', { alert: true, result: message, status: false, isLoggedIn: null, user: {email: '', password: ''} });
     }
 });
 
@@ -60,14 +60,21 @@ app.post('/login', (req, res) => {
             res.redirect('/');
         }
         else {
-            res.render('login', { alert: true, result: results, status: false, isLoggedIn: null });
+            res.render('login', { alert: true, result: results, status: false, isLoggedIn: null, user: {email: loginReq.email, password: loginReq.password}});
         }
     })
 });
 
 app.get('/signup', (req, res) => {
-    res.render('signup', { alert: false, isLoggedIn: null });
+    res.render('signup', { alert: false, isLoggedIn: null, user: null });
 });
+
+app.post('/signup', (req, res) => {
+    let signupReq = req.body
+    myApi.registerUser(signupReq, (results, status) => {
+        res.render('signup', { alert: true, result: results, status: status, isLoggedIn: null, user: signupReq})
+    });
+})
 
 app.get('/add-article', (req, res) => {
     if (req.session.token == null || req.session.token == undefined) {
@@ -129,13 +136,6 @@ app.get('/article-payment', (req, res) => {
     req.session.articleId = null;
     res.render('article-payment', { articleId: articleId, isLoggedIn: req.session.token })
 });
-
-app.post('/signup', (req, res) => {
-    let signupReq = req.body
-    myApi.registerUser(signupReq, (results, status) => {
-        res.render('signup', { alert: true, result: results, status: status, isLoggedIn: null })
-    });
-})
 
 app.get('/', (req, res) => {
     myApi.getArticles((results) => {
@@ -393,8 +393,64 @@ app.get('/my-articles', (req, res) => {
         return res.redirect('/');
     }
     else {
-        myApi.getUserArticles(req.session.token, req.session.userId, (results) => {
-            res.render('my-articles', { articles: results, isLoggedIn: req.session.token });
+        myApi.getUserArticles(req.session.token, req.session.userId, (results, status) => {
+            if(status){
+                res.render('my-articles', { articles: results, isLoggedIn: req.session.token });
+            }
+        });
+    }
+});
+
+app.get('/my-article-reviews/:id', (req, res) => {
+    if (req.session.token === null || req.session.token === undefined) {
+        return res.redirect('/');
+    }
+    else {
+        myApi.getArticleReviews(req.session.token, req.params.id, (reviews, status) => {
+            if(status){
+                myApi.getReviewCriteria(req.session.token, req.params.id, (results, status) => {
+                    if (status) {
+                        res.render('my-article-reviews', {isLoggedIn: req.session.token, reviewCriteria: results, reviews: reviews});
+                    }
+                    else {
+                        
+                    }
+                });
+            }
+            else{
+                if (reviews.includes("Please log in again")) {
+                    req.session.error = results;
+                    req.session.token = null;
+                    return res.redirect('/login');
+                }
+            }
+        });
+    }
+});
+
+app.get('/my-reviews', (req, res) => {
+    if (req.session.token === null || req.session.token === undefined) {
+        return res.redirect('/');
+    }
+    else {
+        myApi.getUserReviews(req.session.token, req.session.userId, (reviews, status) => {
+            if(status){
+                myApi.getReviewCriteriaForUserReviews(req.session.token, (results, status) => {
+                    if (status) {
+                        res.render('my-reviews', {isLoggedIn: req.session.token, reviewCriteria: results, reviews: reviews});
+                    }
+                    else {
+                        
+                    }
+                });
+            }
+            else{
+                if (reviews.includes("Please log in again")) {
+                    req.session.error = results;
+                    req.session.token = null;
+                    return res.redirect('/login');
+                }
+            }
         });
     }
 });
