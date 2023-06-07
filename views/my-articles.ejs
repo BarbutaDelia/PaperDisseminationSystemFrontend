@@ -7,6 +7,7 @@
           <hr class="hero-divider" />
       </div>
     </div>
+    <% if(articles.length> 0) { %>
     <div class="row">
       <% for (let article of articles){ %>
       <div class="col-md-6 mb-4">
@@ -40,4 +41,20 @@
         </div>
       </div>
       <% } %>
+    </div>
+    <% } else { %>
+      <div class="row justify-content-center">
+        <div class="card shadow col-lg-6">
+          <div class="card-body text-center ">
+            <i class="bi bi-exclamation-circle-fill big-icon mb-4 text-warning"></i>
+            <h2 class="mb-4">Sorry!</h2>
+            <p>Looks like you haven't added any articles yet! We would love to see your work!</p>
+          </div>
+          <div class="card-footer text-center">
+            <a href="/add-article" class="btn btn-warning">Add an article</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% } %>
 </section>

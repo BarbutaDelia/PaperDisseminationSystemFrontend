@@ -1,4 +1,4 @@
-<section class="bg-secondary py-lg-5 position-relative">
+<!-- <section class="bg-secondary py-lg-5 position-relative">
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
@@ -8,18 +8,74 @@
         </div>
       </div>
     </div>
-  </section>
+</section>
+<section id="test-page" class="py-lg-5">
+    <div class="container">
+        <div class="tab-content" id="test-content">
+            <div class="tab-pane fade show active" id="question-1" role="tabpanel" aria-labelledby="question-1-tab" tabindex="0">
+                <% for (let i = 0; i < test.length; i++) { %>
+                <h3 id="<%=test[i].questionId %>" name="question-<%=test[i].questionId %>"><%=i + 1 %>. <%=test[i].question %></h3>
+                <div class="answers">
+                    <% for (let j = 0; j < test[i].answerIds.length; j++){ %>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="answers[<%=test[i].questionId %>]" value="<%=test[i].answerIds[j] %>" id="answer-1-1">
+                        <label class="form-check-label" for="answer-1-1">
+                            <%=test[i].answers[j] %>
+                        </label>
+                    </div>
+                    <% } %>
+            </div>
+            <div class="tab-pane fade" id="end-tab" role="tabpanel" aria-labelledby="end-tab" tabindex="0">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <div class="card shadow">
+                            <div class="card-body text-center">
+                                <i class="bi bi-check-circle-fill big-icon mb-4 text-success"></i>
+                                <h2 class="mb-4">This will be a success message!</h2>
+                                <p>You have successfully completed the process of pooping.<br />Now you can whipe your ass and flush the toilet.</p>
+                            </div>
+                            <div class="card-footer text-center">
+                                <a href="#" class="btn btn-warning">Submit your answers</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul class="nav nav-tabs" id="test-content-navigation" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#question-1" type="button" role="tab" aria-controls="question-1" aria-selected="true">
+                    Next
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#question-2" type="button" role="tab" aria-controls="question-2" aria-selected="false">
+                    Next
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#end-tab" type="button" role="tab" aria-controls="end-tab" aria-selected="false">
+                    Next
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </li>
+        </ul>
+        <% } %>
+    </div>
+</section>
 <section class="py-5">
     <div class="container">
         <form method="POST" action="/test/<%=testId%>" id="quiz-form">
-            <% for (let i=0; i < test.length; i++) { %>
+            <% for (let i = 0; i < test.length; i++) { %>
                 <div class="container-question mb-5">
                     <div class="question">
                         <div class="h3 mb-3" id="<%=test[i].questionId %>" name="question-<%=test[i].questionId %>">
                             <%=i + 1 %>. <%=test[i].question %>
                         </div>
                         <div class="" id="options">
-                            <% for (let j=0; j < test[i].answerIds.length; j++){ %>
+                            <% for (let j = 0; j < test[i].answerIds.length; j++){ %>
                                 <label class="options">
                                     <%=test[i].answers[j] %>
                                         <input type="radio" name="answers[<%=test[i].questionId %>]"
@@ -40,4 +96,59 @@
             <% } %>
         </form>
     </div>
+</section> -->
+<section id="test-page" class="py-lg-5">
+    <div class="container">
+        <form method="POST" action="/test/<%=testId%>" id="quiz-form">
+            <div class="tab-content" id="test-content">
+                <% for (let i = 0; i < test.length; i++) { %>
+                    <div class="tab-pane fade <%= i === 0 ? 'show active' : '' %>" id="question-<%=test[i].questionId %>" role="tabpanel" aria-labelledby="question-<%=test[i].questionId %>-tab" tabindex="0">
+                        <h3><%=i + 1 %>. <%=test[i].question %></h3>
+                        <div class="answers">
+                            <% for (let j = 0; j < test[i].answerIds.length; j++){ %>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="answers[<%=test[i].questionId %>]" id="answer-<%=test[i].questionId %>-<%= j + 1 %>" value="<%=test[i].answerIds[j] %>">
+                                    <label class="form-check-label" for="answer-<%=test[i].questionId %>-<%= j + 1 %>">
+                                        <%=test[i].answers[j] %>
+                                    </label>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                <% } %>
+                <div class="tab-pane fade" id="end-tab" role="tabpanel" aria-labelledby="end-tab" tabindex="0">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-6">
+                            <div class="card shadow">
+                                <div class="card-body text-center">
+                                    <h2 class="mb-4">You have reached the end of the test!</h2>
+                                    <p>If you submit your answers now, you will not be able to take this test again for the next three months.</p>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <button type="submit" class="btn btn-warning">Submit your answers</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ul class="nav nav-tabs" id="test-content-navigation" role="tablist">
+                <% for (let i = 0; i < test.length; i++) { %>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link <%= i === 0 ? 'active' : '' %>" data-bs-toggle="tab" data-bs-target="#question-<%=test[i].questionId %>" type="button" role="tab" aria-controls="question-<%=test[i].questionId %>" aria-selected="<%= i === 0 %>">
+                            Next
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </li>
+                <% } %>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#end-tab" type="button" role="tab" aria-controls="end-tab" aria-selected="false">
+                        Next
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </li>
+            </ul>
+        </form>
+    </div>
 </section>
+

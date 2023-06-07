@@ -1,20 +1,16 @@
-<section id="particles-js" class="bg-secondary py-lg-5 position-relative">
-  <div class="container">
-    <div class="row">
-      <div class="col-lg-12">
-        <h1 class="display-4 fst-italic">Complete payment</h1>
-        <hr class="hero-divider" />
-        <h2 class="fst-italic">Please sign the metamask transaction!</h2>
-        <input type="hidden" id="articleId" value="<%=articleId %>">
+<section id="success-page" class="py-lg-5 full-height-section d-flex justify-content-center align-items-center">
+  <div class="card shadow">
+      <div class="card-body text-center">
+          <i class="bi bi-check-circle-fill big-icon mb-4 text-success"></i>
+          <h2 class="mb-4">Please sign the Metamask transaction!</h2>
+          <p>In order for you article to be visible for reviews, you must complete the payment.</p>
       </div>
-    </div>
+      <!-- <div class="card-footer text-center">
+          <a href="#" class="btn btn-warning">Home</a>
+      </div> -->
+      <input type="hidden" id="articleId" value="<%=articleId %>">
   </div>
 </section>
-<!-- <script src="https://cdn.jsdelivr.net/npm/web3@1.6.0/dist/web3.min.js"></script> -->
-<!-- <script src="node_modules/@metamask/onboarding/dist/metamask-onboarding.bundle.js" defer></script>
-<script src="./metamask-onboarding.bundle.js"></script>
-<script src="./node_modules/@metamask/onboarding/dist/metamask-onboarding.bundle.js"></script>
-<script src="dist/metamask-onboarding.bundle.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/@metamask/onboarding@1.0.1/dist/metamask-onboarding.bundle.min.js"></script>
 <script type="module" src="/js/articlePayment.js" defer></script>
 

@@ -7,7 +7,7 @@
             </div>
           </div>
 
-        <div class="row g-3" id="nfts">
+        <div class="row g-3 mb-4" id="nfts">
             <template id="nft_template">
                 <div class="col-lg-3">
                     <!-- style="height: 605px;" -->
@@ -29,6 +29,18 @@
                 </div>
             </template>
         </div>
+            <div class="row justify-content-center" id="alert-nfts" hidden>
+                <div class="card shadow col-lg-6">
+                <div class="card-body text-center ">
+                    <i class="bi bi-exclamation-circle-fill big-icon mb-4 text-warning"></i>
+                    <h2 class="mb-4">Sorry!</h2>
+                    <p>Looks like you haven't earned any badges yet! Take a test to demonstrate your skills!</p>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="/badges" class="btn btn-warning">Get a badge</a>
+                </div>
+                </div>
+            </div>
     </div>
 </div>
 <script type="module" src="/js/getNFTs.js" defer></script>

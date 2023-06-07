@@ -16,13 +16,15 @@ function addAlert(message) {
 const provider = window.ethereum;
 const web3 = new Web3(provider);
 const contract = new web3.eth.Contract(contractAbi, contractAddress);
-
+const accounts = await web3.eth.getAccounts();
+const currentUserAddress = accounts[0];
 // listen for the ArticlePaid event
 contract.events.ArticlePaid()
   .on('data', event => {
-    // const articleId = event.returnValues.articleId;
-    // const amount = web3.utils.fromWei(event.returnValues.amount, 'ether');
-    addAlert("Your payment has been processed. The article is now accesible for reviews! ")
+    const userAddress = event.returnValues.userAddress;
+    if (userAddress === currentUserAddress) { // Compare with the current user's Ethereum address
+      addAlert("Your payment has been processed. The article is now accessible for reviews!");
+    }
   })
   .on('error', error => {
     console.error(error);
@@ -34,7 +36,10 @@ const NFTcontract = new web3.eth.Contract(NFTcontractAbi, NFTcontractAddress);
 // listen for the NFTMinted event
 NFTcontract.events.NFTMinted()
   .on('data', event => {
-    addAlert("Congratulations! The NFT has been successfully transferred into your wallet. Happy reviewing!")
+    const userAddress = event.returnValues.owner;
+    if (userAddress === currentUserAddress){
+      addAlert("Congratulations! The NFT has been successfully transferred into your wallet. Happy reviewing!");
+    }
   })
   .on('error', error => {
     console.error(error);

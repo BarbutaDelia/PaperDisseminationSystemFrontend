@@ -1,25 +1,19 @@
-<section id="particles-js" class="bg-secondary py-lg-5 position-relative">
-    <div class="container">
+<section id="success-page" class="py-lg-5 full-height-section d-flex justify-content-center align-items-center">
+    <div class="card shadow">
         <% if(test.cid !== "" ){ %>
-            <div class="row">
-                <div class="col-lg-12">
-                    <h1 class="display-4 fst-italic">Congratulations!</h1>
-                    <hr class="hero-divider" />
-                    <h2 class="fst-italic">You have passed the test and are eligible for a badge. In order to receive your badge, please accept the prompted metamask transaction. Thank you for participating!</h2>
-                    <h2 class="fst-italic">Once the badge is added to your wallet, you will find it <a class="stretched-link text-warning" href="/my-badges">here</a>.</h2>
-                    <input type="hidden" id="CID" value="<%=test.cid %>">
-                </div>
+        <div class="card-body text-center">
+            <i class="bi bi-check-circle-fill big-icon mb-4 text-success"></i>
+            <h2 class="mb-4">Congratulations!</h2>
+            <p>You have passed the test and are eligible for a badge. In order to receive your badge, please accept the prompted metamask transaction.<br> Thank you for participating!</p>
+        </div>
+        <input type="hidden" id="CID" value="<%=test.cid %>">
+        <% } else {%>
+            <div class="card-body text-center">
+                <i class="bi bi-exclamation-circle-fill big-icon mb-4 text-danger"></i>
+                <h2 class="mb-4">Thank you for submitting your test!</h2>
+                <p>Unfortunately, your score did not meet the necessary criteria to qualify for a badge. We encourage you to continue practicing and improving your skills, and to try again in the future. <br> Best of luck!</p>
             </div>
-            <% } else {%>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <h1 class="display-4 fst-italic">Thank you for submitting your test!</h1>
-                        <hr class="hero-divider" />
-                        <h2 class="fst-italic">Unfortunately, your score did not meet the necessary criteria to qualify for a badge. We encourage you to continue practicing and improving your skills, and to try again in the future. Best of luck! </h2>
-                        <input type="hidden" id="CID" value="<%=test.cid %>">
-                    </div>
-                </div>
-            <% } %>
+        <% } %>
     </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/@metamask/onboarding@1.0.1/dist/metamask-onboarding.bundle.min.js"></script>

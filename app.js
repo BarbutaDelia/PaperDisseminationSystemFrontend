@@ -72,9 +72,14 @@ app.get('/signup', (req, res) => {
 app.post('/signup', (req, res) => {
     let signupReq = req.body
     myApi.registerUser(signupReq, (results, status) => {
-        res.render('signup', { alert: true, result: results, status: status, isLoggedIn: null, user: signupReq})
+        return res.redirect('/login')
     });
 })
+
+app.get('/about', (req, res) => {
+    res.render('about', { alert: false, isLoggedIn: req.session.token});
+});
+
 
 app.get('/add-article', (req, res) => {
     if (req.session.token == null || req.session.token == undefined) {
@@ -457,25 +462,7 @@ app.get('/my-reviews', (req, res) => {
 
 app.use(function (req, res) {
     res.status(404);
-    if (res.statusCode == 404) {
-        if (req.session.accessCounter == null) {
-            req.session.accessCounter = 1
-        }
-        else {
-            req.session.accessCounter++
-        }
-    }
-    // console.log(req.session.accessCounter)
-    if (req.session.accessCounter > 5) {
-        req.session.blockedIp = req.session.blockedIp || [];
-        let clientIp = requestIp.getClientIp(req);
-        // console.log(clientIp);
-        if (!req.session.blockedIp.includes(clientIp)) {
-            req.session.blockedIp.push(clientIp)
-            // console.log(req.session.blockedIp)
-        }
-    }
-    res.render('eroare-404')
+    res.render('error')
     return
 });
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:` + port));
