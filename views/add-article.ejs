@@ -24,17 +24,16 @@
           </div> -->
           <div class="mb-3">
             <label for="title">Title</label>
-            <input type="text" class="form-control" id="title" name="title" placeholder="Title of the article" required>
+            <input type="text" class="form-control" id="title" name="title" placeholder="Title of the article" value="<%= article ? article.title : '' %>" required>
           </div>
           <div class="mb-3">
             <label for="description">Description</label>
-            <textarea class="form-control" id="description" name="description"
-              placeholder="Description/Abstract of the article" required></textarea>
-          </div>
+            <textarea class="form-control" id="description" name="description" placeholder="Description/Abstract of the article" required><%= article ? article.description : '' %></textarea>
+          </div>          
           <div class="mb-3">
             <label for="authors">Coauthors</label>
             <input type="text" class="form-control" id="authors" name="authors"
-              placeholder="Second author, third author, ...">
+              placeholder="Second author, third author, ..." value="<%= article ? article.authors : '' %>">
           </div>
           <div class="mb-3">
             <label for="tags" class="form-label">Tags</label>

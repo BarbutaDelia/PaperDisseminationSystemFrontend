@@ -39,11 +39,21 @@ app.use(
     })
 );
 
-// TODO unde e req.session.token = null trebuie si req.session.userId = null;
 app.get('/login', (req, res) => {
-    if (req.session.error == null || req.session.error == undefined) {
+    // if the user tries to access login, but is already logged in
+    if(req.session.token !== null && req.session.token !== undefined){
+        return res.redirect('/');
+    }
+    // if the user is redirected here after sign-up
+    if(req.session.userRegistered){
+        req.session.userRegistered = null;
+        res.render('login', { alert: true, status: true, result: "User registered successfully!", isLoggedIn: null, user: {email: '', password: ''} });
+    }
+    // if the user accesses this page and no previous error has been established
+    else if (req.session.error == null || req.session.error == undefined) {
         res.render('login', { alert: false, status: false, isLoggedIn: null, user: {email: '', password: ''} });
     }
+    // if the user accesses this page, as a result of an error
     else {
         let message = req.session.error;
         req.session.error = null;
@@ -66,13 +76,23 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/signup', (req, res) => {
+    // if the user tries to access signup, but is already logged in
+    if(req.session.token !== null && req.session.token !== undefined){
+        return res.redirect('/');
+    }
     res.render('signup', { alert: false, isLoggedIn: null, user: null });
 });
 
 app.post('/signup', (req, res) => {
-    let signupReq = req.body
-    myApi.registerUser(signupReq, (results, status) => {
-        return res.redirect('/login')
+    let user = req.body
+    myApi.registerUser(user, (results, status) => {
+        if(status === true){
+            req.session.userRegistered = true;
+            return res.redirect('/login')
+        }
+        else{
+            res.render('signup', { alert: true, result: results, isLoggedIn: null, user: user });
+        }
     });
 })
 
@@ -88,12 +108,14 @@ app.get('/add-article', (req, res) => {
     else {
         myApi.getTagLevels(req.session.token, (tagLevels) => {
             if (req.session.error === null || req.session.error === undefined) {
-                res.render('add-article', { alert: false, isLoggedIn: req.session.token, tagLevels: tagLevels });
+                res.render('add-article', { alert: false, isLoggedIn: req.session.token, tagLevels: tagLevels, article: null });
             }
             else {
                 let message = req.session.error;
                 req.session.error = null;
-                res.render('add-article', { alert: true, result: message, status: false, isLoggedIn: req.session.token, tagLevels: tagLevels });
+                let article = req.session.article;
+                req.session.article = null; 
+                res.render('add-article', { alert: true, result: message, status: false, isLoggedIn: req.session.token, tagLevels: tagLevels, article: article });
             }
         });
     }
@@ -103,9 +125,11 @@ app.post('/add-article', upload.single('file'), (req, res) => {
     let title = req.body.title;
     let description = req.body.description;
     let authors = [];
+    let article = {title: title, description: description, authors: req.body.authors};
     if (req.body.authors !== "") {
         authors = req.body.authors.split(',').map(author => author.trim().replace(/\s*,\s*/g, ','));
     }
+    
     let tagLevels = req.body.tags;
     let file = req.file;
 
@@ -130,6 +154,7 @@ app.post('/add-article', upload.single('file'), (req, res) => {
             }
             else {
                 req.session.error = results;
+                req.session.article = article;
                 res.redirect('/add-article');
             }
         }
@@ -217,12 +242,12 @@ app.get('/test/:id', (req, res) => {
                     req.session.error = results;
                     return res.redirect('/badges');
                 }
-                if (results.includes("Please obtain your badge")) {
+                else if (results.includes("Please obtain your badge")) {
                     req.session.error = results;
                     req.session.tagId = req.params.id;
                     return res.redirect('/view-score');
                 }
-                if (results.includes("Please log in again")) {
+                else if (results.includes("Please log in again")) {
                     req.session.error = results;
                     req.session.token = null;
                     return res.redirect('/login');
@@ -244,16 +269,13 @@ app.post('/test/:id', (req, res) => {
     let test = req.body;
     let answerIds;
     if (test.answers !== undefined) {
-        answerIds = {
-            answerIds: test.answers.map(Number)
-        };
+        answerIds= test.answers.map(Number)
     }
     else {
-        answerIds = {
-            answerIds: []
-        };
+        answerIds = [];
     }
-    myApi.computeTestScore(req.session.token, req.params.id, answerIds, (results, status) => {
+    let testDto = {tagId: req.params.id, answerIds: answerIds};
+    myApi.computeTestScore(req.session.token, testDto, (results, status) => {
         if (status) {
             res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
         }
@@ -402,6 +424,13 @@ app.get('/my-articles', (req, res) => {
             if(status){
                 res.render('my-articles', { articles: results, isLoggedIn: req.session.token });
             }
+            else{
+                if (results.includes("Please log in again")) {
+                    req.session.error = results;
+                    req.session.token = null;
+                    return res.redirect('/login');
+                }
+            }
         });
     }
 });
@@ -424,7 +453,7 @@ app.get('/my-article-reviews/:id', (req, res) => {
             }
             else{
                 if (reviews.includes("Please log in again")) {
-                    req.session.error = results;
+                    req.session.error = reviews;
                     req.session.token = null;
                     return res.redirect('/login');
                 }
@@ -451,7 +480,7 @@ app.get('/my-reviews', (req, res) => {
             }
             else{
                 if (reviews.includes("Please log in again")) {
-                    req.session.error = results;
+                    req.session.error = reviews;
                     req.session.token = null;
                     return res.redirect('/login');
                 }

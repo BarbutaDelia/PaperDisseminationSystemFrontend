@@ -18,6 +18,9 @@ exports.registerUser = async function (signupReq, f) {
   }
   else {
     res = await res.text();
+    if(res.includes(":")){
+      res = res.split(":")[1];
+    }
     let status = false;
     f(res, status)
   }
@@ -246,14 +249,14 @@ exports.getTest = async function (token, id, callback) {
   }
 }
 
-exports.computeTestScore = async function (token, id, answerIds, callback) {
-  let res = await fetch(API_URL + "/tags/" + id, {
+exports.computeTestScore = async function (token, testDto, callback) {
+  let res = await fetch(API_URL + "/userTests", {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     },
-    body: JSON.stringify(answerIds)
+    body: JSON.stringify(testDto)
   });
   if (res.ok) {
     res = await res.json();
@@ -355,6 +358,9 @@ exports.getUserArticles = async function (token, userId, callback) {
   }
   else {
     res = await res.text();
+    if (res.status === 401) {
+      callback("Session expired! Please log in again!", false);
+    }
     callback(res, false)
   }
 }
