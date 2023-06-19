@@ -143,7 +143,7 @@ app.post('/add-article', upload.single('file'), (req, res) => {
 
     myApi.addArticle({ title, description, authors, tagLevels, file }, req.session.token, (results, status) => {
         if (status) {
-            req.session.articleId = results;
+            req.session.articleId = results.id;
             res.redirect('/article-payment');
         }
         else {
@@ -162,7 +162,8 @@ app.post('/add-article', upload.single('file'), (req, res) => {
 });
 
 app.get('/article-payment', (req, res) => {
-    let articleId = req.session.articleId.id;
+    let articleId = null;
+    req.session.articleId !== null ? articleId = req.session.articleId : articleId = null;
     req.session.articleId = null;
     res.render('article-payment', { articleId: articleId, isLoggedIn: req.session.token })
 });
@@ -339,6 +340,30 @@ app.get('/my-badges', (req, res) => {
     }
 });
 
+// app.get('/download-article/:id', (req, res) => {
+//     if (req.session.token === null || req.session.token === undefined) {
+//         return res.redirect('/');
+//     }
+//     else{
+//         myApi.getArticleFile(req.session.token, req.params.id, (results, status) => {
+//             if (status) {
+//                 res.redirect('/review-article/' + req.params.id);
+//             }
+//             else {
+//                 if (results.includes("Please log in again")) {
+//                     req.session.error = results;
+//                     req.session.token = null;
+//                     req.session.userId = null;
+//                     return res.redirect('/login');
+//                 }
+//                 else {
+//                     //TODO: de tratat alte cazuri 
+//                 }
+//             }
+//         });
+//     }
+// });
+
 app.get('/review-article/:id', (req, res) => {
     if (req.session.token === null || req.session.token === undefined) {
         return res.redirect('/');
@@ -442,12 +467,12 @@ app.get('/my-article-reviews/:id', (req, res) => {
     else {
         myApi.getArticleReviews(req.session.token, req.params.id, (reviews, status) => {
             if(status){
-                myApi.getReviewCriteria(req.session.token, req.params.id, (results, status) => {
+                myApi.getReviewCriteriaWithoutChecks(req.session.token, (results, status) => {
                     if (status) {
                         res.render('my-article-reviews', {isLoggedIn: req.session.token, reviewCriteria: results, reviews: reviews});
                     }
                     else {
-                        
+                        console.log('anaaaa');
                     }
                 });
             }
@@ -469,7 +494,7 @@ app.get('/my-reviews', (req, res) => {
     else {
         myApi.getUserReviews(req.session.token, req.session.userId, (reviews, status) => {
             if(status){
-                myApi.getReviewCriteriaForUserReviews(req.session.token, (results, status) => {
+                myApi.getReviewCriteriaWithoutChecks(req.session.token, (results, status) => {
                     if (status) {
                         res.render('my-reviews', {isLoggedIn: req.session.token, reviewCriteria: results, reviews: reviews});
                     }

@@ -316,6 +316,28 @@ exports.getReviewCriteria = async function (token, articleId, callback) {
   }
 }
 
+// this method is for when the review period is over and the author want to see the reviews he has received
+exports.getReviewCriteriaWithoutChecks = async function (token, callback) {
+  let res = await fetch(API_URL + "/reviewCriteria" , {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  if (res.ok) {
+    res = await res.json();
+    callback(res, true);
+  }
+  else {
+    if (res.status === 401) {
+      callback("Session expired! Please log in again!", false);
+    }
+    res = await res.text();
+    console.log(res);
+    callback(res, false);
+  }
+}
 exports.submitReview = async function (token, reviewReq, callback) {
   let res = await fetch(API_URL + "/reviews", {
     method: 'POST',
@@ -375,6 +397,7 @@ exports.getArticleReviews = async function (token, articleId, callback) {
   });
   if (res.ok) {
     res = await res.json();
+    // console.log(res);
     callback(res, true);
   }
   else {
@@ -383,32 +406,32 @@ exports.getArticleReviews = async function (token, articleId, callback) {
     }
     else{
       res = await res.text();
-      console.log(res);
+      // console.log(res);
       callback(res, false);
     }
   }
 }
 
-exports.getReviewCriteriaForUserReviews = async function (token, callback) {
-  let res = await fetch(API_URL + "/reviewCriteria", {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + token
-    }
-  });
-  if (res.ok) {
-    res = await res.json();
-    callback(res, true);
-  }
-  else {
-    if (res.status === 401) {
-      callback("Session expired! Please log in again!", false);
-    }
-    res = await res.text();
-    callback(res, false);
-  }
-}
+// exports.getReviewCriteriaForUserReviews = async function (token, callback) {
+//   let res = await fetch(API_URL + "/reviewCriteria", {
+//     method: 'GET',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'Authorization': 'Bearer ' + token
+//     }
+//   });
+//   if (res.ok) {
+//     res = await res.json();
+//     callback(res, true);
+//   }
+//   else {
+//     if (res.status === 401) {
+//       callback("Session expired! Please log in again!", false);
+//     }
+//     res = await res.text();
+//     callback(res, false);
+//   }
+// }
 
 function formatEarnedAmount(review) {
   if (review.earnedAmount !== null) {
@@ -436,8 +459,34 @@ exports.getUserReviews = async function (token, userId, callback) {
     }
     else{
       res = await res.text();
-      console.log(res);
+      // console.log(res);
       callback(res, false);
     }
   }
 }
+
+// exports.getArticleFile = async function (token, articleId, callback) {
+//   let res = await fetch(API_URL + "/articles/" + articleId + "/download-article", {
+//     method: 'GET',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       'Authorization': 'Bearer ' + token
+//     }
+//   });
+//   if (res.ok) {
+//     res = await res.json();
+//     console.log(res);
+//     callback(res, true);
+//   }
+//   else {
+//     // TODO : trebuie validat ca se poate descarca articolul
+//     if (res.status == 401) {
+//       callback("Session expired! Please log in again!", false);
+//     }
+//     else{
+//       res = await res.text();
+//       console.log(res);
+//       callback(res, false);
+//     }
+//   }
+// }

@@ -8,6 +8,9 @@
         <div class="h3 fw-normal">In exchange for the reviews you will be receiving, we ask you to pay 0.1 ethereum for
           every added article. Upload a PDF of your article, prepare a short description for it and decide on the most
           important skills that a reviewer must have to review your paper. After that, you're all set.</div>
+          <div class="h3"><b>
+            Please do not specify the names of the authors in the PDF you upload!
+          </b></div>
       </div>
     </div>
   </div>
@@ -27,7 +30,7 @@
             <input type="text" class="form-control" id="title" name="title" placeholder="Title of the article" value="<%= article ? article.title : '' %>" required>
           </div>
           <div class="mb-3">
-            <label for="description">Description</label>
+            <label for="description">Abstract</label>
             <textarea class="form-control" id="description" name="description" placeholder="Description/Abstract of the article" required><%= article ? article.description : '' %></textarea>
           </div>          
           <div class="mb-3">

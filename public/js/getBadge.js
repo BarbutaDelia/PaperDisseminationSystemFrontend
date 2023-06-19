@@ -27,38 +27,56 @@ if (CID != "") {
     }
     else {
         const provider = window.ethereum;
+        console.log(provider.selectedAddress);
         const web3 = new Web3(provider);
         const tokenURI = IPFS + CID;
-        console.log(tokenURI);
+        // console.log(tokenURI);
         const contract = new web3.eth.Contract(NFTcontractAbi, NFTcontractAddress);
         mintNFT();
 
+        
         async function mintNFT() {
+            // Request user to connect their selected Metamask account
             try {
-                await ethereum.request({ method: 'eth_requestAccounts' });
+              let response = await ethereum.request({ method: 'eth_requestAccounts' });
+              console.log(response);
             } catch (error) {
-                console.error(error);
+              console.error(error);
             }
-
-            const accounts = await web3.eth.getAccounts();
-
+          
+            // Get the currently connected account
+            const accounts = await ethereum.request({ method: 'eth_accounts' });
+          
+            if (accounts.length === 0) {
+              console.log("No account is connected");
+              return;
+            }
+          
+            const account = accounts[0]; // Use the connected account
+            console.log(account);
+          
             try {
-                const gasLimit = await contract.methods.mintNFT(accounts[0], tokenURI).estimateGas({
-                    from: accounts[0]
-                });
-
-                const result = await contract.methods.mintNFT(accounts[0], tokenURI).send({
-                    from: accounts[0],
-                    gas: gasLimit
-                });
-
-                console.log(result);
+              const gasLimit = await contract.methods.mintNFT(account, tokenURI).estimateGas({
+                from: account
+              });
+          
+              const result = await contract.methods.mintNFT(account, tokenURI).send({
+                from: account,
+                gas: gasLimit
+              });
+          
+              console.log(result);
             } catch (error) {
-                // console.error(error);
-                if (error.message.includes("denied transaction signature")) {
-                    addAlert("In order for the badge to be added to your wallet, you must accept the transaction!")
-                }
+              if (error.message.includes("denied transaction signature")) {
+                addAlert("In order for the badge to be added to your wallet, you must accept the transaction!")
+              }
             }
-        }
+          }          
     }
 }
+
+// MAYBE -- IMPORTANT CODE for when i will check the mm address is the same as the one on the db
+// ethereum.on('accountsChanged', function (accounts) {
+//     // Time to reload your interface with accounts[0]!
+//     window.location.reload();
+//   });

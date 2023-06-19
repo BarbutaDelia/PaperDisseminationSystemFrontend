@@ -16,9 +16,10 @@
                     <li><%=key %> - <%=article.tagLevels[key] %></li>
                 </ul>
                 <% } %>
-                <form action="/review-article/<%=article.id %>" method="post">
+                <!-- DE CE ERA AICI POST SI MERGEA?? -->
+                <form action="/review-article/<%=article.id %>" method="GET"> 
                     <button type="submit" class="btn btn-warning" id="reviewButton"><i class="bi bi-star-fill"></i>Review Now</button>
-                  </form>
+                </form>
             </div>
         </div>
     </div>
@@ -27,7 +28,6 @@
     var reviewUntil = new Date("<%= article.review_until %>");
     var now = new Date();
     var reviewButton = document.getElementById("reviewButton");
-    console.log("ana");
     if (reviewUntil <= now) {
         reviewButton.disabled = true;
     }
