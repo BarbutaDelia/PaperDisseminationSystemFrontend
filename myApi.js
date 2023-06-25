@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/api"
+const API_URL = "http://localhost:8080/api" //TODO : variabila de env
 const axios = require('axios');
 const FormData = require('form-data');
 const web3 = require('web3');
@@ -62,17 +62,17 @@ exports.getArticles = async function (f) {
     }
   });
   if (res.ok) {
-    res = await res.json()
+    res = await res.json();
     for (let article of res) {
-      article.created_at = formatDate(article.created_at)
-      formatTagNames(article.tagNames)
+      article.created_at = formatDate(article.created_at);
+      formatTagNames(article.tagNames);
       // formatDescription(article)
     }
-    f(res)
+    f(res);
   }
   else {
     res = await res.text();
-    f(res)
+    f(res);
   }
 }
 

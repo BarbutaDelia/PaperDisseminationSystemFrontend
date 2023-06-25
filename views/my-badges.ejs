@@ -10,14 +10,12 @@
         <div class="row g-3 mb-4" id="nfts">
             <template id="nft_template">
                 <div class="col-lg-3">
-                    <!-- style="height: 605px;" -->
                     <div class="card shadow-sm">
                         <image class="p-5" src="" width="100%" height="100%" />
-                        <!-- height  -->
                         <div class="card-body">
                             <h5 class="card-title" id="title">NFT Title</h5>
                             <p class="card-text" id="description"></p>
-                            <!-- OpenSea doe not support sepolia -->
+                            <!-- OpenSea does not support sepolia -->
                             <!-- <div class="d-flex justify-content-end align-items-center"> -->
                                 <!-- <small class="text-muted">9 mins</small> -->
                                 <!-- <div class="btn-group">
@@ -28,6 +26,7 @@
                     </div>
                 </div>
             </template>
+            <input type="hidden" id="metamaskAddress" value="<%=metamaskAddress %>">
         </div>
             <div class="row justify-content-center" id="alert-nfts" hidden>
                 <div class="card shadow col-lg-6">

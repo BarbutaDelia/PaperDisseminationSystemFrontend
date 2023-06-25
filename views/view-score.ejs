@@ -1,19 +1,12 @@
 <section id="success-page" class="py-lg-5 full-height-section d-flex justify-content-center align-items-center">
     <div class="card shadow">
-        <% if(test.cid !== "" ){ %>
         <div class="card-body text-center">
-            <i class="bi bi-check-circle-fill big-icon mb-4 text-success"></i>
-            <h2 class="mb-4">Congratulations!</h2>
-            <p>You have passed the test and are eligible for a badge. In order to receive your badge, please accept the prompted metamask transaction.<br> Thank you for participating!</p>
+            <i class=""></i>
+            <h2 class="mb-4"></h2>
+            <p></p>
         </div>
         <input type="hidden" id="CID" value="<%=test.cid %>">
-        <% } else {%>
-            <div class="card-body text-center">
-                <i class="bi bi-exclamation-circle-fill big-icon mb-4 text-danger"></i>
-                <h2 class="mb-4">Thank you for submitting your test!</h2>
-                <p>Unfortunately, your score did not meet the necessary criteria to qualify for a badge. We encourage you to continue practicing and improving your skills, and to try again in the future. <br> Best of luck!</p>
-            </div>
-        <% } %>
+        <input type="hidden" id="metamaskAddress" value="<%=metamaskAddress %>">
     </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/@metamask/onboarding@1.0.1/dist/metamask-onboarding.bundle.min.js"></script>

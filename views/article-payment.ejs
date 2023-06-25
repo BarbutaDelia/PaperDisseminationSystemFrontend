@@ -1,31 +1,16 @@
 <section id="success-page" class="py-lg-5 full-height-section d-flex justify-content-center align-items-center">
-    <% if(articleId !== null) { %>
         <div class="card shadow">
             <div class="card-body text-center">
-                <i class="bi bi-check-circle-fill big-icon mb-4 text-success"></i>
-                <h2 class="mb-4">Please sign the Metamask transaction!</h2>
-                <p>In order for you article to be visible for reviews, you must complete the payment.</p>
+                <i class=""></i>
+                <h2 class="mb-4"></h2>
+                <p></p>
             </div>
             <!-- <div class="card-footer text-center">
           <a href="#" class="btn btn-warning">Home</a>
       </div> -->
             <input type="hidden" id="articleId" value="<%=articleId %>">
+            <input type="hidden" id="metamaskAddress" value="<%=metamaskAddress %>">
         </div>
-        <% } else { %>
-            <div class="row justify-content-center">
-                <div class="card shadow">
-                    <div class="card-body text-center">
-                        <i class="bi bi-exclamation-circle-fill big-icon mb-4 text-warning"></i>
-                        <h2 class="mb-4">Sorry!</h2>
-                        <p>You have declined the transaction, please upload the article again and complete the
-                            payment.</p>
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="/add-article" class="btn btn-warning">Add an article</a>
-                    </div>
-                </div>
-            </div>
-    <% } %>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/@metamask/onboarding@1.0.1/dist/metamask-onboarding.bundle.min.js"></script>
 <script type="module" src="/js/articlePayment.js" defer></script>

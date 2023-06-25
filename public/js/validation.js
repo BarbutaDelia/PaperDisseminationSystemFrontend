@@ -76,11 +76,11 @@ if (loginForm) {
     });
 }
 
-function areInvalidAuthors(authors) {
-    const regex = /^[\w\s]+(,[\w\s]+)*$/;
-    const invalidRegex = /^[\s,]*$/;
-    return !regex.test(authors) || invalidRegex.test(authors);
-}
+// function areInvalidAuthors(authors) {
+//     const regex = /^[\w\s]+(,[\w\s]+)*$/;
+//     const invalidRegex = /^[\s,]*$/;
+//     return !regex.test(authors) || invalidRegex.test(authors);
+// }
 
 
 function isInvalidFileFormat(file) {
@@ -124,10 +124,10 @@ if (addArticleForm) {
             errorMessage = "Description is required!";
         }
 
-        if (authors.length > 0 && areInvalidAuthors(authors)) {
-            valid = false;
-            errorMessage = "Coauthors field is not properly formatted!";
-        }
+        // if (authors.length > 0 && areInvalidAuthors(authors)) {
+        //     valid = false;
+        //     errorMessage = "Coauthors field is not properly formatted!";
+        // }
 
         if (isInvalidFileFormat(file)) {
             valid = false;

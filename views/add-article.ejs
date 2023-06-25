@@ -1,4 +1,3 @@
-
 <section class="bg-secondary py-lg-5 position-relative">
   <div class="container">
     <div class="row">
@@ -34,9 +33,10 @@
             <textarea class="form-control" id="description" name="description" placeholder="Description/Abstract of the article" required><%= article ? article.description : '' %></textarea>
           </div>          
           <div class="mb-3">
-            <label for="authors">Coauthors</label>
-            <input type="text" class="form-control" id="authors" name="authors"
-              placeholder="Second author, third author, ..." value="<%= article ? article.authors : '' %>">
+            <label for="authors">Coauthors' emails</label>
+            <input type="text" id="authors" name="authors" value="" />
+            <!-- <input type="text" class="form-control" id="authors" name="authors"
+              placeholder="Second author, third author, ..." value="<%= article ? article.authors : '' %>"> -->
           </div>
           <div class="mb-3">
             <label for="tags" class="form-label">Tags</label>

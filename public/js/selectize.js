@@ -5,3 +5,13 @@
 $(document).ready(function () {
     $('select').selectize({ maxItems: 3 })
 });
+$("#authors").selectize({
+    delimiter: ",",
+    persist: false,
+    create: function (input) {
+      return {
+          value: input,
+          text: input,
+      };
+    },
+  });

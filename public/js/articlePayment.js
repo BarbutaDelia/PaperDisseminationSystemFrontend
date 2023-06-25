@@ -24,31 +24,34 @@ else {
   const articleId = document.getElementById('articleId').value;
   const provider = window.ethereum;
   const web3 = new Web3(provider);
+  var isMetamaskAddressCorrect = true;
 
-  // const contractAddress = '0x64707Dc09A2365f528b7AC886b5D2b3592322C02';
-  // const contractABI = JSON.parse('[ { "anonymous": false, "inputs": [ { "indexed": false, "internalType": "uint256", "name": "articleId", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "ArticlePaid", "type": "event" }, { "inputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "name": "articlePayments", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "articleId", "type": "uint256" } ], "name": "payForArticle", "outputs": [], "stateMutability": "payable", "type": "function" } ]');
   const contract = new web3.eth.Contract(contractAbi, contractAddress);
-  // callContractMethod();
 
   async function callContractMethod() {
     try {
       await ethereum.request({ method: 'eth_requestAccounts' });
 
       const accounts = await web3.eth.getAccounts();
+      let metamaskAddress = document.getElementById("metamaskAddress").value;
+      if (metamaskAddress.toUpperCase() != accounts[0].toUpperCase()) {
+        isMetamaskAddressCorrect = false;
+        setView(isMetamaskAddressCorrect);
+      }
+      else {
+        setView(isMetaMaskInstalled);
+        const gasLimit = await contract.methods.payForArticle(articleId).estimateGas({
+          from: accounts[0],
+          value: web3.utils.toWei(articlePaymentSum, "ether")
+        });
 
-      const gasLimit = await contract.methods.payForArticle(articleId).estimateGas({
-        from: accounts[0],
-        value: web3.utils.toWei(articlePaymentSum, "ether")
-      });
-
-      const result = await contract.methods.payForArticle(articleId).send({
-        from: accounts[0],
-        gas: gasLimit,
-        value: web3.utils.toWei(articlePaymentSum, "ether")
-      });
-
+        const result = await contract.methods.payForArticle(articleId).send({
+          from: accounts[0],
+          gas: gasLimit,
+          value: web3.utils.toWei(articlePaymentSum, "ether")
+        });
+      }
     } catch (error) {
-      console.log(error);
       if (error.message.includes("denied transaction signature")) {
         addAlert("In order for the article to be added, you must accept the transaction!")
       }
@@ -56,5 +59,16 @@ else {
   }
 
   callContractMethod().catch(console.error);
-
+}
+function setView(status) {
+  if (status) {
+    document.querySelector(".card-body h2").textContent = "Please sign the Metamask transaction!";
+    document.querySelector(".card-body i").className = "bi bi-check-circle-fill big-icon mb-4 text-success";
+    document.querySelector(".card-body p").textContent = "In order for you article to be visible for reviews, you must complete the payment.";
+  }
+  else {
+    document.querySelector(".card-body h2").textContent = "Sorry!";
+    document.querySelector(".card-body i").className = "bi bi-exclamation-circle-fill big-icon mb-4 text-warning";
+    document.querySelector(".card-body p").textContent = "Please switch to the Metamask address associated with this account and refresh the page!";
+  }
 }

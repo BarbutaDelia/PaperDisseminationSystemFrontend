@@ -3,7 +3,6 @@ const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
-const sqlite3 = require('sqlite3');
 const requestIp = require('request-ip');
 const myApi = require("./myApi")
 const querystring = require('querystring');
@@ -62,11 +61,12 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-    let loginReq = req.body
+    let loginReq = req.body;
     myApi.login(loginReq, (results, status) => {
         if (status) {
             req.session.token = results.token;
             req.session.userId = results.id;
+            req.session.metamaskAddress = results.metamaskAddress;
             res.redirect('/');
         }
         else {
@@ -148,7 +148,7 @@ app.post('/add-article', upload.single('file'), (req, res) => {
         }
         else {
             if (results.includes("Please log in again")) {
-                req.session.token = null;
+                invalidateSession(req.session);
                 req.session.error = results;
                 return res.redirect('/login');
             }
@@ -162,10 +162,12 @@ app.post('/add-article', upload.single('file'), (req, res) => {
 });
 
 app.get('/article-payment', (req, res) => {
-    let articleId = null;
-    req.session.articleId !== null ? articleId = req.session.articleId : articleId = null;
-    req.session.articleId = null;
-    res.render('article-payment', { articleId: articleId, isLoggedIn: req.session.token })
+    if (req.session.token == null || req.session.token == undefined) {
+        res.redirect('/');
+    }
+    else{
+        res.render('article-payment', { articleId: req.session.articleId, isLoggedIn: req.session.token, metamaskAddress: req.session.metamaskAddress });
+    }
 });
 
 app.get('/', (req, res) => {
@@ -218,7 +220,7 @@ app.get('/badges', (req, res) => {
                     res.render('badges', { tags: results, isLoggedIn: req.session.token });
                 }
                 else {
-                    req.session.token = null;
+                    invalidateSession(req.session);
                     req.session.error = results;
                     return res.redirect('/login');
                 }
@@ -250,7 +252,7 @@ app.get('/test/:id', (req, res) => {
                 }
                 else if (results.includes("Please log in again")) {
                     req.session.error = results;
-                    req.session.token = null;
+                    invalidateSession(req.session);
                     return res.redirect('/login');
                 }
                 else {
@@ -278,12 +280,13 @@ app.post('/test/:id', (req, res) => {
     let testDto = {tagId: req.params.id, answerIds: answerIds};
     myApi.computeTestScore(req.session.token, testDto, (results, status) => {
         if (status) {
+            req.session.test = results;
             res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
         }
         else {
             if (results.includes("Please log in again")) {
                 req.session.error = results;
-                req.session.token = null;
+                invalidateSession(req.session);
                 return res.redirect('/login');
             }
             else {
@@ -302,7 +305,7 @@ app.get('/view-score', (req, res) => {
         else {
             try {
                 var validJson = JSON.parse(results);
-                res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
+                res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id, metamaskAddress: req.session.metamaskAddres });
             } catch (e) {
                 return res.redirect('/badges');
             }
@@ -314,12 +317,12 @@ app.get('/view-score', (req, res) => {
         req.session.tagId = null;
         myApi.getCIDForLatestTest(req.session.token, req.session.userId, tagId, (results, status) => {
             if (status) {
-                res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: tagId });
+                res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: tagId, metamaskAddress: req.session.metamaskAddress });
             }
             else {
                 if (results.includes("Please log in again")) {
                     req.session.error = results;
-                    req.session.token = null;
+                    invalidateSession(req.session);
                     return res.redirect('/login');
                 }
                 else {
@@ -336,7 +339,7 @@ app.get('/my-badges', (req, res) => {
         return res.redirect('/');
     }
     else {
-        res.render('my-badges', { isLoggedIn: req.session.token });
+        res.render('my-badges', { isLoggedIn: req.session.token, metamaskAddress: req.session.metamaskAddress });
     }
 });
 
@@ -376,7 +379,7 @@ app.get('/review-article/:id', (req, res) => {
             else {
                 if (results.includes("Please log in again")) {
                     req.session.error = results;
-                    req.session.token = null;
+                    invalidateSession(req.session);
                     return res.redirect('/login');
                 }
                 else {
@@ -411,7 +414,7 @@ app.post('/review-article/:id', (req, res) => {
         else {
             if (results.includes("Please log in again")) {
                 req.session.error = results;
-                req.session.token = null;
+                invalidateSession(req.session);
                 return res.redirect('/login');
             }
             else {
@@ -424,8 +427,7 @@ app.post('/review-article/:id', (req, res) => {
 app.post('/logout', (req, res) => {
     myApi.logout(req.session.token, (results, status) => {
         if (status) {
-            req.session.token = null;
-            req.session.userId = null;
+            invalidateSession(req.session);
             res.redirect('/login');
         }
         else {
@@ -452,7 +454,7 @@ app.get('/my-articles', (req, res) => {
             else{
                 if (results.includes("Please log in again")) {
                     req.session.error = results;
-                    req.session.token = null;
+                    invalidateSession(req.session);
                     return res.redirect('/login');
                 }
             }
@@ -472,14 +474,13 @@ app.get('/my-article-reviews/:id', (req, res) => {
                         res.render('my-article-reviews', {isLoggedIn: req.session.token, reviewCriteria: results, reviews: reviews});
                     }
                     else {
-                        console.log('anaaaa');
                     }
                 });
             }
             else{
                 if (reviews.includes("Please log in again")) {
                     req.session.error = reviews;
-                    req.session.token = null;
+                    invalidateSession(req.session);
                     return res.redirect('/login');
                 }
             }
@@ -506,7 +507,7 @@ app.get('/my-reviews', (req, res) => {
             else{
                 if (reviews.includes("Please log in again")) {
                     req.session.error = reviews;
-                    req.session.token = null;
+                    invalidateSession(req.session);
                     return res.redirect('/login');
                 }
             }
@@ -519,4 +520,10 @@ app.use(function (req, res) {
     res.render('error')
     return
 });
+
+function invalidateSession(session){
+    session.token = null;
+    session.userId = null;
+    session.metamaskAddress = null;
+}
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:` + port));
