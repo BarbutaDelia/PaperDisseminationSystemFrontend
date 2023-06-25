@@ -465,28 +465,12 @@ exports.getUserReviews = async function (token, userId, callback) {
   }
 }
 
-// exports.getArticleFile = async function (token, articleId, callback) {
-//   let res = await fetch(API_URL + "/articles/" + articleId + "/download-article", {
-//     method: 'GET',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Authorization': 'Bearer ' + token
-//     }
-//   });
-//   if (res.ok) {
-//     res = await res.json();
-//     console.log(res);
-//     callback(res, true);
-//   }
-//   else {
-//     // TODO : trebuie validat ca se poate descarca articolul
-//     if (res.status == 401) {
-//       callback("Session expired! Please log in again!", false);
-//     }
-//     else{
-//       res = await res.text();
-//       console.log(res);
-//       callback(res, false);
-//     }
-//   }
-// }
+exports.getArticleFile = async function (token, articleId) {
+  let res = await axios.get(API_URL + "/articles/" + articleId + "/download-article", {
+    responseType: 'stream',
+    headers: {
+      'Authorization': 'Bearer ' + token
+    }
+  });
+  return res;
+}

@@ -132,23 +132,53 @@
                     </div>
                 </div>
             </div>
-            <ul class="nav nav-tabs" id="test-content-navigation" role="tablist">
-                <% for (let i = 0; i < test.length; i++) { %>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link <%= i === 0 ? 'active' : '' %>" data-bs-toggle="tab" data-bs-target="#question-<%=test[i].questionId %>" type="button" role="tab" aria-controls="question-<%=test[i].questionId %>" aria-selected="<%= i === 0 %>">
-                            Next
-                            <i class="bi bi-chevron-right"></i>
-                        </button>
-                    </li>
-                <% } %>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#end-tab" type="button" role="tab" aria-controls="end-tab" aria-selected="false">
-                        Next
-                        <i class="bi bi-chevron-right"></i>
-                    </button>
-                </li>
-            </ul>
+            <% for (let i = 0; i < test.length; i++) { %>
+                <ul class="nav nav-tabs test-content-navigation <%= i === 0 ? 'active' : '' %>" id="test-content-navigation-<%=test[i].questionId %>" role="tablist">
+                    <% if(i !== 0){ %>
+                        <li class="nav-item me-3" role="presentation">
+                            <button class="nav-link back-nav-link" type="button" onclick="customShowTab('#question-<%=test[i-1].questionId %>', '#test-content-navigation-<%=test[i-1].questionId %>')">
+                                <i class="bi bi-chevron-left"></i>
+                                Back
+                            </button>
+                        </li>
+                    <% } %>
+                    <% if(i !== test.length - 1){ %>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" type="button" onclick="customShowTab('#question-<%=test[i+1].questionId %>', '#test-content-navigation-<%=test[i+1].questionId %>')">
+                                Next
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </li>
+                    <% } else { %>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" type="button" onclick="customShowTab('#end-tab')">
+                                Next
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </li>
+                    <% } %>
+                </ul>
+            <% } %>
         </form>
     </div>
 </section>
+<script>
+    function customShowTab(tabSelector, tabNavigatorSelector){
+        const tabs = document.querySelectorAll("#test-content .tab-pane");
+        tabs.forEach(tab => {
+            tab.classList.remove("show");
+            tab.classList.remove("active");
+        })
 
+        const tabsNavigators = document.querySelectorAll(".test-content-navigation");
+        tabsNavigators.forEach(tabsNavigator => {
+            tabsNavigator.classList.remove("active");
+        })
+        
+        document.querySelector(tabSelector).classList.add("show");
+        document.querySelector(tabSelector).classList.add("active");
+        document.querySelector(tabNavigatorSelector).classList.add("active");
+
+
+    }
+</script>

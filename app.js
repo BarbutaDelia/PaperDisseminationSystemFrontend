@@ -8,6 +8,7 @@ const myApi = require("./myApi")
 const querystring = require('querystring');
 const multer = require('multer');
 const upload = multer();
+const { pipeline } = require('stream').promises;
 
 
 const SECRET_KEY = "PaperDisseminationSystemSecretKey"
@@ -281,7 +282,7 @@ app.post('/test/:id', (req, res) => {
     myApi.computeTestScore(req.session.token, testDto, (results, status) => {
         if (status) {
             req.session.test = results;
-            res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id });
+            res.render('view-score', { isLoggedIn: req.session.token, test: results, testId: req.params.id, metamaskAddress: req.session.metamaskAddress });
         }
         else {
             if (results.includes("Please log in again")) {
@@ -343,29 +344,29 @@ app.get('/my-badges', (req, res) => {
     }
 });
 
-// app.get('/download-article/:id', (req, res) => {
-//     if (req.session.token === null || req.session.token === undefined) {
-//         return res.redirect('/');
-//     }
-//     else{
-//         myApi.getArticleFile(req.session.token, req.params.id, (results, status) => {
-//             if (status) {
-//                 res.redirect('/review-article/' + req.params.id);
-//             }
-//             else {
-//                 if (results.includes("Please log in again")) {
-//                     req.session.error = results;
-//                     req.session.token = null;
-//                     req.session.userId = null;
-//                     return res.redirect('/login');
-//                 }
-//                 else {
-//                     //TODO: de tratat alte cazuri 
-//                 }
-//             }
-//         });
-//     }
-// });
+app.get('/download-article/:id', async (req, res) => {
+    if (req.session.token === null || req.session.token === undefined) {
+        return res.redirect('/');
+    }
+    else {
+        try {
+            const result = await myApi.getArticleFile(req.session.token, req.params.id);
+            res.setHeader('Content-Disposition', result.headers['content-disposition']);
+            await pipeline(result.data, res);
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                req.session.error = "Session expired! Please log in again!";
+                req.session.token = null;
+                req.session.userId = null;
+                return res.redirect('/login');
+            } else {
+                // TODO: handle other errors
+                console.error(error);
+                res.status(500).send('An error occurred while downloading the file.');
+            }
+        }
+    }
+});
 
 app.get('/review-article/:id', (req, res) => {
     if (req.session.token === null || req.session.token === undefined) {

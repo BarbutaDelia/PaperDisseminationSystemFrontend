@@ -6,10 +6,14 @@
                 <hr class="hero-divider" />
                 <h2 class="fst-italic">We kindly ask you not to review an article unless you have finished reading it!
                 </h2>
-                <div class="">
+                <!-- <div class="">
                     <a class="btn btn-warning" href="http://localhost:8080/api/articles/<%=articleId %>/download-article"
                         role="button">Download Article</a>
-                </div>
+                </div> -->
+                <form class="download-article" action="/download-article/<%=articleId %>" method="GET">
+                    <button class="btn btn-warning" type="submit">Download Article</button>
+                </form>
+                
                 <!-- <div>
                     <button onclick="window.location.href='/download-article/<%=articleId %>'">Download Article</button>
                 </div> -->
