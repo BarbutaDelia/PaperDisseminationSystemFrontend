@@ -11,8 +11,6 @@ function addAlert(message) {
     '';
 }
 
-// const contractAddress = '0x64707Dc09A2365f528b7AC886b5D2b3592322C02';
-// const contractAbi = JSON.parse('[ { "anonymous": false, "inputs": [ { "indexed": false, "internalType": "uint256", "name": "articleId", "type": "uint256" }, { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" } ], "name": "ArticlePaid", "type": "event" }, { "inputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "name": "articlePayments", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "articleId", "type": "uint256" } ], "name": "payForArticle", "outputs": [], "stateMutability": "payable", "type": "function" } ]');
 const provider = window.ethereum;
 const web3 = new Web3(provider);
 const contract = new web3.eth.Contract(contractAbi, contractAddress);

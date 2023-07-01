@@ -18,7 +18,7 @@ exports.registerUser = async function (signupReq, f) {
   }
   else {
     res = await res.text();
-    if(res.includes(":")){
+    if (res.includes(":")) {
       res = res.split(":")[1];
     }
     let status = false;
@@ -54,13 +54,24 @@ function formatDate(dateTime) {
   return formattedDate;
 }
 
-exports.getArticles = async function (f) {
-  let res = await fetch(API_URL + "/articles?paymentStatus=true", {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+exports.getArticles = async function (querySearch, f) {
+  let res;
+  if (querySearch === undefined) {
+    res = await fetch(API_URL + "/articles?paymentStatus=true", {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
+  else{
+    res = await fetch(API_URL + "/articles?paymentStatus=true&searchQuery=" + querySearch, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }
   if (res.ok) {
     res = await res.json();
     for (let article of res) {
@@ -68,11 +79,11 @@ exports.getArticles = async function (f) {
       formatTagNames(article.tagNames);
       // formatDescription(article)
     }
-    f(res);
+    f(res, true);
   }
   else {
     res = await res.text();
-    f(res);
+    f(res, false);
   }
 }
 
@@ -318,7 +329,7 @@ exports.getReviewCriteria = async function (token, articleId, callback) {
 
 // this method is for when the review period is over and the author want to see the reviews he has received
 exports.getReviewCriteriaWithoutChecks = async function (token, callback) {
-  let res = await fetch(API_URL + "/reviewCriteria" , {
+  let res = await fetch(API_URL + "/reviewCriteria", {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -404,7 +415,7 @@ exports.getArticleReviews = async function (token, articleId, callback) {
     if (res.status == 401) {
       callback("Session expired! Please log in again!", false);
     }
-    else{
+    else {
       res = await res.text();
       // console.log(res);
       callback(res, false);
@@ -457,7 +468,7 @@ exports.getUserReviews = async function (token, userId, callback) {
     if (res.status == 401) {
       callback("Session expired! Please log in again!", false);
     }
-    else{
+    else {
       res = await res.text();
       // console.log(res);
       callback(res, false);

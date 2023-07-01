@@ -1,5 +1,5 @@
 <div class="container py-5">
-    <div class="row">
+    <div id="reviewInProgress" class="row" hidden>
         <div class="col-md-8 pe-5">
             <h1><%=article.title %></h1>
             <div class="mb-3 text-muted">Posted on: <%=article.created_at %></div>
@@ -8,17 +8,41 @@
         </div>
         <div class="col-md-4 border-left-yellow px-5">
             <div class=" position-sticky" style="top: 0;">
-                <h3>Review this article</h3>
-                <div class="mb-3 text-muted">Review until: <%=article.review_until %></div>
+                <h3 id="main-text">Review this article</h3>
+                <div id="review-until" class="mb-3 text-muted">Review until: <%=article.review_until %></div>
                 <div class="fw-bold">Required badges</div>
                 <% for(let key in article.tagLevels){ %>
                 <ul class="list-unstyled text-dark">
                     <li><%=key %> - <%=article.tagLevels[key] %></li>
                 </ul>
                 <% } %>
-                <!-- DE CE ERA AICI POST SI MERGEA?? -->
                 <form action="/review-article/<%=article.id %>" method="GET"> 
                     <button type="submit" class="btn btn-warning" id="reviewButton"><i class="bi bi-star-fill"></i>Review Now</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="reviewOver" class="row" hidden>
+        <div class="col-md-8 pe-5">
+            <h1><%=article.title %></h1>
+            <div class="mb-3 text-muted">Posted on: <%=article.created_at %></div>
+            <p><%=article.description %>
+            </p>
+        </div>
+        <div class="col-md-4 border-left-yellow px-5">
+            <div class=" position-sticky" style="top: 0;">
+                <h3 id="main-text">Authors:</h3>
+                <% for(let author of article.authorNames){ %>
+                <div id="review-until" class="mb-2 text-muted"><%=author%></div>
+                <% } %>
+                <div class="fw-bold">Required badges</div>
+                <% for(let key in article.tagLevels){ %>
+                <ul class="list-unstyled text-dark">
+                    <li><%=key %> - <%=article.tagLevels[key] %></li>
+                </ul>
+                <% } %>
+                <form action="/download-article/<%=article.id %>" method="GET"> 
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-star-fill"></i>Download Article</button>
                 </form>
             </div>
         </div>
@@ -27,9 +51,11 @@
 <script>
     var reviewUntil = new Date("<%= article.review_until %>");
     var now = new Date();
-    var reviewButton = document.getElementById("reviewButton");
     if (reviewUntil <= now) {
-        reviewButton.disabled = true;
+        document.getElementById("reviewOver").hidden = false;
+    }
+    else{
+        document.getElementById("reviewInProgress").hidden = false;
     }
 </script>
 

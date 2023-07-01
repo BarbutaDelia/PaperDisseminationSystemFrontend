@@ -10,21 +10,15 @@ const multer = require('multer');
 const upload = multer();
 const { pipeline } = require('stream').promises;
 
-
 const SECRET_KEY = "PaperDisseminationSystemSecretKey"
 const app = express();
 
 const port = 6789;
 
-// directorul 'views' va conține fișierele .ejs (html + js executat la server)
 app.set('view engine', 'ejs');
-// suport pentru layout-uri - implicit fișierul care reprezintă template-ul site-ului este views/layout.ejs
 app.use(expressLayouts);
-// directorul 'public' va conține toate resursele accesibile direct de către client (e.g., fișiere css, javascript, imagini)
 app.use(express.static('public'))
-// corpul mesajului poate fi interpretat ca json; datele de la formular se găsesc în format json în req.body
 app.use(bodyParser.json());
-// utilizarea unui algoritm de deep parsing care suportă obiecte în obiecte
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser())
 app.use(
@@ -172,14 +166,15 @@ app.get('/article-payment', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    myApi.getArticles((results) => {
-        if (req.session.error === null || req.session.error === undefined) {
-            res.render('index', { articles: results, isLoggedIn: req.session.token });
+    // console.log(req.query.searchQuery);
+    myApi.getArticles(req.query.searchQuery, (results, status) => {
+        if ((req.session.error === null || req.session.error === undefined) && status) {
+            res.render('index', { articles: results, isLoggedIn: req.session.token, showSearch: true });
         }
         else {
             let message = req.session.error;
             req.session.error = null;
-            res.render('index', { alert: true, result: message, status: false, articles: results, isLoggedIn: req.session.token })
+            res.render('index', { alert: true, result: message, status: false, articles: results, isLoggedIn: req.session.token, showSearch: true });
         }
     });
 });
@@ -345,25 +340,21 @@ app.get('/my-badges', (req, res) => {
 });
 
 app.get('/download-article/:id', async (req, res) => {
-    if (req.session.token === null || req.session.token === undefined) {
-        return res.redirect('/');
-    }
-    else {
-        try {
-            const result = await myApi.getArticleFile(req.session.token, req.params.id);
-            res.setHeader('Content-Disposition', result.headers['content-disposition']);
-            await pipeline(result.data, res);
-        } catch (error) {
-            if (error.response && error.response.status === 401) {
-                req.session.error = "Session expired! Please log in again!";
-                req.session.token = null;
-                req.session.userId = null;
-                return res.redirect('/login');
-            } else {
-                // TODO: handle other errors
-                console.error(error);
-                res.status(500).send('An error occurred while downloading the file.');
-            }
+    try {
+        const result = await myApi.getArticleFile(req.session.token, req.params.id);
+        res.setHeader('Content-Disposition', result.headers['content-disposition']);
+        await pipeline(result.data, res);
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            req.session.error = "Session expired! Please log in again!";
+            req.session.token = null;
+            req.session.userId = null;
+            return res.redirect('/login');
+        } else if(error.response && error.response.status === 401){
+            req.session.error = "You are not allowed to download this article";
+        }else {
+            req.session.error = "An error was encountered!";
+            return res.redirect('/');
         }
     }
 });
@@ -407,8 +398,6 @@ app.post('/review-article/:id', (req, res) => {
     };
     myApi.submitReview(req.session.token, finalReq, (results, status) => {
         if (status) {
-            // req.session.submittedReview = "Your review has been submitted, thank you for your contribution!"
-            // return res.redirect('/') sau res.redirect('/article/id');
             req.session.reviewMessage = results;
             return res.redirect('/article/' + req.params.id);
         }
