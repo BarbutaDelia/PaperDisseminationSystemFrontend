@@ -352,7 +352,7 @@ app.get('/download-article/:id', async (req, res) => {
             return res.redirect('/login');
         } else if(error.response && error.response.status === 401){
             req.session.error = "You are not allowed to download this article";
-        }else {
+        } else {
             req.session.error = "An error was encountered!";
             return res.redirect('/');
         }
@@ -408,7 +408,8 @@ app.post('/review-article/:id', (req, res) => {
                 return res.redirect('/login');
             }
             else {
-
+                req.session.error = "An error was encountered!";
+                return res.redirect('/');
             }
         }
     });
@@ -464,6 +465,8 @@ app.get('/my-article-reviews/:id', (req, res) => {
                         res.render('my-article-reviews', {isLoggedIn: req.session.token, reviewCriteria: results, reviews: reviews});
                     }
                     else {
+                        req.session.error = "An error was encountered!";
+                        return res.redirect('/');
                     }
                 });
             }
@@ -490,7 +493,8 @@ app.get('/my-reviews', (req, res) => {
                         res.render('my-reviews', {isLoggedIn: req.session.token, reviewCriteria: results, reviews: reviews});
                     }
                     else {
-                        
+                        req.session.error = "An error was encountered!";
+                        return res.redirect('/');
                     }
                 });
             }
@@ -507,7 +511,7 @@ app.get('/my-reviews', (req, res) => {
 
 app.use(function (req, res) {
     res.status(404);
-    res.render('error')
+    res.render('error', {isLoggedIn: req.session.token})
     return
 });
 

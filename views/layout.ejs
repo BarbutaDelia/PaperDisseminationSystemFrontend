@@ -85,10 +85,11 @@
             <li><a href="/add-article" class="nav-link px-2 text-white">Add an article</a></li>
           </ul>
   
-          <!-- <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-            <input type="search" class="form-control form-control-dark text-bg-dark" placeholder="Search..."
-              aria-label="Search">
-          </form> -->
+          <% if (typeof showSearch !== 'undefined' && showSearch) { %>
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search" method="GET" action="/">
+                <input type="search" class="form-control form-control-dark text-bg-white" placeholder="Search..." aria-label="Search"  name="searchQuery">
+            </form>
+          <% } %>
           
           <div class="btn-group">
             <button type="button" class="btn btn-warning dropdown-toggle bi-house-fill" data-bs-toggle="dropdown" aria-expanded="false">

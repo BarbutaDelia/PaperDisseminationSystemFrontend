@@ -12,74 +12,65 @@ function addAlert(message) {
     '</div> ' +
     '';
 }
-
 const CID = document.getElementById('CID').value;
-if (CID != "") {
 
-  const isMetaMaskInstalled = () => {
-    const { ethereum } = window;
-    return Boolean(ethereum && ethereum.isMetaMask);
-  };
+// Function to check if MetaMask is installed
+const isMetaMaskInstalled = () => {
+  const { ethereum } = window;
+  return Boolean(ethereum && ethereum.isMetaMask);
+};
+
+async function mintNFT(provider, contract, tokenURI) {
+  try {
+    let response = await provider.request({ method: 'eth_requestAccounts' });
+    console.log(response);
+    const accounts = await provider.request({ method: 'eth_accounts' });
+    if (accounts.length === 0) {
+      console.log("No account is connected");
+      return;
+    }
+    const account = accounts[0];
+
+    if (account.toUpperCase() !== document.getElementById("metamaskAddress").value.toUpperCase()) {
+      setView("wrongMetamask");
+    } else {
+      setView("passedTest");
+      try {
+        const gasLimit = await contract.methods.mintNFT(account, tokenURI).estimateGas({
+          from: account
+        });
+        const result = await contract.methods.mintNFT(account, tokenURI).send({
+          from: account,
+          gas: gasLimit
+        });
+      } catch (error) {
+        if (error.message.includes("denied transaction signature")) {
+          addAlert("In order for the badge to be added to your wallet, you must accept the transaction!")
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+if (CID != "") {
   if (!isMetaMaskInstalled()) {
     addAlert("Please install the metamask extension!");
     const onboarding = new MetaMaskOnboarding({ forwarderOrigin });
     onboarding.startOnboarding();
-  }
-  else {
+  } else {
     const provider = window.ethereum;
     const web3 = new Web3(provider);
     const tokenURI = IPFS + CID;
     const contract = new web3.eth.Contract(NFTcontractAbi, NFTcontractAddress);
-    mintNFT();
-
-
-    async function mintNFT() {
-      // Request user to connect their selected Metamask account
-      try {
-        let response = await ethereum.request({ method: 'eth_requestAccounts' });
-        console.log(response);
-      } catch (error) {
-        console.error(error);
-      }
-
-      // Get the currently connected account
-      const accounts = await ethereum.request({ method: 'eth_accounts' });
-
-      if (accounts.length === 0) {
-        console.log("No account is connected");
-        return;
-      }
-
-      const account = accounts[0];
-
-      if (account.toUpperCase() !== document.getElementById("metamaskAddress").value.toUpperCase()) {
-        setView("wrongMetamask");
-      }
-      else{
-        setView("passedTest");
-        try {
-          const gasLimit = await contract.methods.mintNFT(account, tokenURI).estimateGas({
-            from: account
-          });
-  
-          const result = await contract.methods.mintNFT(account, tokenURI).send({
-            from: account,
-            gas: gasLimit
-          });
-  
-          console.log(result);
-        } catch (error) {
-          if (error.message.includes("denied transaction signature")) {
-            addAlert("In order for the badge to be added to your wallet, you must accept the transaction!")
-          }
-        }
-      }
-    }
+    
+    mintNFT(provider, contract, tokenURI);
   }
-}
-else {
+} else {
   setView("failedTest");
 }
+
 function setView(viewType) {
   if (viewType === "passedTest") {
     document.querySelector(".card-body h2").textContent = "Congratulations!";

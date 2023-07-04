@@ -2,6 +2,7 @@ import { NFTcontractAddress, NFTcontractAbi } from './config.js';
 // connect to metamask if it's not connected
 const IPFS = 'ipfs://';
 const GATEWAY = 'https://GATEWAY.pinata.cloud/ipfs/';
+
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         await ethereum.request({ method: 'eth_requestAccounts' });
@@ -20,26 +21,19 @@ window.addEventListener('DOMContentLoaded', async () => {
         contractInstance.defaultAccount = walletAddress;
         let nftsBalance = await contractInstance.methods.balanceOf(walletAddress).call();
         nftsBalance = parseInt(nftsBalance);
-
         const nftTemplate = document.getElementById("nft_template");
         // there are no NFTs associated with this account
         if (nftsBalance === 0) {
             setView(true);
         }
-
         for (let i = 0; i < nftsBalance; i++) {
             let tokenId = await contractInstance.methods.tokenOfOwnerByIndex(walletAddress, i).call();
-
             let tokenMetadataURI = await contractInstance.methods.tokenURI(tokenId).call();
-
             if (tokenMetadataURI.startsWith(IPFS)) {
                 let CID = tokenMetadataURI.split(IPFS)[1];
                 tokenMetadataURI = GATEWAY + CID;
             }
-            console.log(tokenMetadataURI)
-
             let tokenMetadata;
-
             try {
                 const response = await fetch(tokenMetadataURI);
                 tokenMetadata = await response.json();
@@ -47,7 +41,6 @@ window.addEventListener('DOMContentLoaded', async () => {
                 console.error("Failed to fetch token metadata:", error);
                 continue;
             }
-
             let tokenMetadataImage = '';
             if (tokenMetadata['image'].startsWith(IPFS)) {
                 var CID = tokenMetadata['image'].split(IPFS)[1];
