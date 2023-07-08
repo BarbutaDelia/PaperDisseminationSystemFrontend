@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:8080/api" //TODO : variabila de env
+const API_URL = "http://localhost:8080/api" 
 const axios = require('axios');
 const FormData = require('form-data');
 const web3 = require('web3');

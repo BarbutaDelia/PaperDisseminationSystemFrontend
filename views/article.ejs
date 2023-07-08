@@ -41,8 +41,13 @@
                     <li><%=key %> - <%=article.tagLevels[key] %></li>
                 </ul>
                 <% } %>
+                <% if(article.grade !== null){ %>
+                <div class="mb-3 fs-5">
+                    <i class="bi bi-star-fill">: <%=article.grade %>/10</i>
+                </div>
+                <% } %>
                 <form action="/download-article/<%=article.id %>" method="GET"> 
-                    <button type="submit" class="btn btn-warning"><i class="bi bi-star-fill"></i>Download Article</button>
+                    <button type="submit" class="btn btn-warning">Download Article</button>
                 </form>
             </div>
         </div>
